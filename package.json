@@ -1,0 +1,22 @@
+{
+  "name": "onthis-frame",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "frog vercel-build",
+    "dev": "frog dev",
+    "deploy": "vercel"
+  },
+  "dependencies": {
+    "csv-parser": "^3.0.0",
+    "frog": "latest",
+    "fs": "^0.0.1-security",
+    "hono": "latest"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.6.11",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3",
+    "vercel": "^32.4.1"
+  }
+}
