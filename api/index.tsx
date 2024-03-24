@@ -148,7 +148,7 @@ app.frame('/dashboard', (c) => {
       currentPage > 1 && <Button value="back">⬅️ Previous</Button>,
       ...displayData.map(item => (
         // <Button action='/getAddress' value={item.description}>💰 {item.token}</Button>
-        <Button action={`/transaction/${encodeURIComponent(item.shortcutAddress)}/${encodeURIComponent(item.description)}/${encodeURIComponent(item.originChain)}`} value={`💰 ${item.token}`}>
+        <Button action={`/transaction/${encodeURIComponent(item.shortcutAddress)}/${encodeURIComponent(item.token)}/${encodeURIComponent(item.description)}/${encodeURIComponent(item.originChain)}/${encodeURIComponent(item.destinationChain)}`} value={`💰 ${item.token}`}>
           {`💰 ${item.token}`} {/* Add content inside the button */}
         </Button>
       )),
@@ -197,8 +197,8 @@ app.frame('/dashboard', (c) => {
 //   });
 // });
 
-app.frame('/transaction/:shortcutAddress/:description/:originChain', (c) => {
-  const { shortcutAddress, description, originChain } = c.req.param()
+app.frame('/transaction/:shortcutAddress/:token/:description/:originChain/:destinationChain', (c) => {
+  const { shortcutAddress, token, description, originChain, destinationChain } = c.req.param()
 
   return c.res({
     action: '/finish',
@@ -226,13 +226,40 @@ app.frame('/transaction/:shortcutAddress/:description/:originChain', (c) => {
         }}
       >
           <div style={{ alignItems: 'center', color: 'black', display: 'flex', fontSize: 30, flexDirection: 'column', marginBottom: 60 }}>
-            <p style={{ justifyContent: 'center', textAlign: 'center', fontSize: 40}}>{description}</p>
+          <p style={{ justifyContent: 'center', textAlign: 'center', fontSize: 40}}>💰 {token}</p>
+            <p>{description}</p>
+            <p>
+              <img src={
+                originChain === 'Mainnet' ? '/images/chain/eth.png' :
+                originChain === 'Optimism' ? '/images/chain/op.png' :
+                originChain === 'Base' ? '/images/chain/base.png' :
+                originChain === 'Arbitrum' ? '/images/chain/arb.png' :
+                originChain === 'Polygon' ? '/images/chain/polygon.png' :
+                '/images/icon.png'
+              } width='40px' height='40px' alt="Chain logo" />
+              &nbsp;
+              {originChain}
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <span>🔀</span>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <img src={
+                destinationChain === 'Mainnet' ? '/images/chain/eth.png' :
+                destinationChain === 'Optimism' ? '/images/chain/op.png' :
+                destinationChain === 'Base' ? '/images/chain/base.png' :
+                destinationChain === 'Arbitrum' ? '/images/chain/arb.png' :
+                destinationChain === 'Polygon' ? '/images/chain/polygon.png' :
+                '/images/icon.png'
+              } width='40px' height='40px' alt="Chain logo" />
+              &nbsp;
+              {destinationChain}
+            </p>
+            <p>Contract : {shortcutAddress} </p> 
           </div>
       </div>
     ),
     intents: [
       <TextInput placeholder="Enter ETH Amount..." />,
-      <Button.Transaction target={`/transfer/${shortcutAddress}/${originChain}`}>Transfer</Button.Transaction>,
+      <Button.Transaction target={`/transfer/${shortcutAddress}/${originChain}`}>Transfer ETH</Button.Transaction>,
     ],
   });
 });
@@ -261,14 +288,18 @@ app.transaction('/transfer/:shortcutAddress/:originChain', (c) => {
   const { shortcutAddress, originChain } = c.req.param();
   const chainIdStr = getChainId(originChain);
 
-  // Log the chainId
-  console.log('Shortcut Address:', shortcutAddress);
-  console.log('Chain ID:', chainIdStr);
+  // Log the data type of shortcutAddress and chainIdStr
+  console.log('Shortcut Address:', shortcutAddress, typeof shortcutAddress);
+  console.log('Chain ID:', chainIdStr, typeof chainIdStr);
 
-  return c.send({
+
+  return c.res({ 
     chainId: chainIdStr,
-    to: `0x${shortcutAddress}`,
-    value: parseEther(value),
+    method: 'eth_sendTransaction',
+    params: { 
+      to: `0x${shortcutAddress}`, 
+      value: parseEther(value), 
+    }, 
   });
 });
 
