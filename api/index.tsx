@@ -56,16 +56,16 @@ export const app = new Frog({
 app.frame('/', (c) => {
   currentPage = 1;
   return c.res({
-    action: '/leaderboard',
+    action: '/dashboard',
     image: '/dashboard.jpeg',
     intents: [
-      <Button action="/leaderboard" value="leaderboard page">Connect Wallet</Button>,
+      <Button action="/dashboard" value="dashboard page">Let's Get Started!</Button>,
     ],
   });
 });
 
-// Looping leaderboard frame
-app.frame('/leaderboard', (c) => {
+// Looping dashboard frame
+app.frame('/dashboard', (c) => {
   const { buttonValue } = c;
 
   if (buttonValue === 'next' && currentPage < totalPages) {
@@ -79,7 +79,7 @@ app.frame('/leaderboard', (c) => {
   const displayData = apiData.slice(startIndex, endIndex);
 
   return c.res({
-    action: '/leaderboard',
+    action: '/dashboard',
     image: (
       <div
         style={{
