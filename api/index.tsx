@@ -191,9 +191,8 @@ app.transaction('/transfer', (c) => {
   // Send transaction response.
   const { inputText } = c;
   const value = inputText ? inputText : '0';
-  console.log('Transfer button clicked. Value:', value);
   return c.send({
-    chainId: 'eip155:8453',
+    chainId: 'eip155:84532',
     to: '0x130946d8dF113e45f44e13575012D0cFF1E53e37',
     value: parseEther(value),
   });
