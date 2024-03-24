@@ -47,13 +47,10 @@ async function readCSV() {
 readCSV();
 
 // Initialize Frog app
-export const app = new Frog({
-  assetsPath: '/',
-  basePath: '/',
-});
+export const app = new Frog();
 
 // Initial frame
-app.frame('/frame', (c) => {
+app.frame('/', (c) => {
   currentPage = 1;
   return c.res({
     action: '/leaderboard',
