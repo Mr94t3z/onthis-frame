@@ -49,7 +49,7 @@ readCSV();
 // Initialize Frog app
 export const app = new Frog({
   assetsPath: '/',
-  basePath: '/frame',
+  basePath: '/api',
 });
 
 // Initial frame
