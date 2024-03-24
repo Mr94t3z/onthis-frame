@@ -1,6 +1,8 @@
 import { Button, Frog, TextInput, parseEther } from 'frog';
 import { handle } from 'frog/vercel';
 import fetch from 'node-fetch';
+// import { abiOnchain } from './abiOnchain.js'
+// import { abi } from './erc20Abi.js';
 
 // Define the type for the CSV row
 interface SwapData {
@@ -16,7 +18,9 @@ let currentPage = 1;
 const itemsPerPage = 1;
 let totalPages = 0;
 
-// Function to fetch and parse CSV data from GitHub
+// Define unsupported chain(s)
+const unsupportedChain = ['Mainnet', 'Arbitrum', 'Polygon'];
+
 async function readCSV() {
   const csvUrl = 'https://raw.githubusercontent.com/Mr94t3z/request-farcaster-api/master/resources/data.csv';
   const response = await fetch(csvUrl);
@@ -28,8 +32,8 @@ async function readCSV() {
     const columns = row.split(',');
     const originChain = columns[3].trim(); // Trim the originChain value
     const destinationChain = columns[4].trim(); // Trim the destinationChain value
-    // Check if neither the origin chain nor the destination chain is 'Polygon', if so, add to apiData
-    if (originChain !== 'Polygon' && destinationChain !== 'Polygon') {
+    // Check if neither the origin chain nor the destination chain is in the unsupported chain list, if so, add to apiData
+    if (!unsupportedChain.includes(originChain) && !unsupportedChain.includes(destinationChain)) {
       const swapData: SwapData = {
         shortcutAddress: columns[0],
         description: columns[1],
@@ -45,6 +49,7 @@ async function readCSV() {
   console.log('CSV file successfully processed.');
 }
 
+
 // Call function to populate data
 readCSV();
 
@@ -59,7 +64,7 @@ app.frame('/', (c) => {
   currentPage = 1;
   return c.res({
     action: '/dashboard',
-    image: '/dashboard.jpeg',
+    image: '/images/dashboard.jpeg',
     intents: [
       <Button action="/dashboard" value="dashboard page">Let's Get Started!</Button>,
     ],
@@ -111,12 +116,12 @@ app.frame('/dashboard', (c) => {
             <p>{item.description}</p>
             <p>
               <img src={
-                item.originChain === 'Mainnet' ? '/eth.png' :
-                item.originChain === 'Optimism' ? '/op.png' :
-                item.originChain === 'Base' ? '/base.png' :
-                item.originChain === 'Arbitrum' ? '/arb.png' :
-                item.originChain === 'Polygon' ? '/polygon.png' :
-                '/other.png'
+                item.originChain === 'Mainnet' ? '/images/chain/eth.png' :
+                item.originChain === 'Optimism' ? '/images/chain/op.png' :
+                item.originChain === 'Base' ? '/images/chain/base.png' :
+                item.originChain === 'Arbitrum' ? '/images/chain/arb.png' :
+                item.originChain === 'Polygon' ? '/images/chain/polygon.png' :
+                '/images/icon.png'
               } width='40px' height='40px' alt="Chain logo" />
               &nbsp;
               {item.originChain}
@@ -124,12 +129,12 @@ app.frame('/dashboard', (c) => {
               <span>🔀</span>
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
               <img src={
-                item.destinationChain === 'Mainnet' ? '/eth.png' :
-                item.destinationChain === 'Optimism' ? '/op.png' :
-                item.destinationChain === 'Base' ? '/base.png' :
-                item.destinationChain === 'Arbitrum' ? '/arb.png' :
-                item.destinationChain === 'Polygon' ? '/polygon.png' :
-                '/other.png'
+                item.destinationChain === 'Mainnet' ? '/images/chain/eth.png' :
+                item.destinationChain === 'Optimism' ? '/images/chain/op.png' :
+                item.destinationChain === 'Base' ? '/images/chain/base.png' :
+                item.destinationChain === 'Arbitrum' ? '/images/chain/arb.png' :
+                item.destinationChain === 'Polygon' ? '/images/chain/polygon.png' :
+                '/images/icon.png'
               } width='40px' height='40px' alt="Chain logo" />
               &nbsp;
               {item.destinationChain}
@@ -142,18 +147,59 @@ app.frame('/dashboard', (c) => {
     intents: [
       currentPage > 1 && <Button value="back">⬅️ Previous</Button>,
       ...displayData.map(item => (
-        <Button action='/transaction' value={item.token}>💰 {item.token}</Button>
+        // <Button action='/getAddress' value={item.description}>💰 {item.token}</Button>
+        <Button action='/transaction' value={item.description}>💰 {item.token}</Button>
       )),
       currentPage < totalPages && <Button value="next">Next ➡️</Button>,
     ],
   });
 });
 
+// app.frame('/getAddress', (c) => {
+//   const { buttonValue } = c
+
+//   return c.res({
+//     action: '/transaction',
+//     image: (
+//       <div
+//         style={{
+//           alignItems: 'center',
+//           background: 'white',
+//           backgroundSize: '100% 100%',
+//           display: 'flex',
+//           flexDirection: 'column',
+//           flexWrap: 'nowrap',
+//           height: '100%',
+//           justifyContent: 'center',
+//           textAlign: 'center',
+//           width: '100%',
+//           color: 'white',
+//           fontSize: 60,
+//           fontStyle: 'normal',
+//           letterSpacing: '-0.025em',
+//           lineHeight: 1.4,
+//           marginTop: 0,
+//           padding: '0 120px',
+//           whiteSpace: 'pre-wrap',
+//         }}
+//       >
+//           <div style={{ alignItems: 'center', color: 'black', display: 'flex', fontSize: 30, flexDirection: 'column', marginBottom: 60 }}>
+//             <p style={{ justifyContent: 'center', textAlign: 'center', fontSize: 40}}>{buttonValue}</p>
+//           </div>
+//       </div>
+//     ),
+//     intents: [
+//       <TextInput placeholder="Enter your EVM wallet address..." />,
+//       <Button action='/transaction' value={buttonValue}>Submit</Button>
+//     ],
+//   });
+// });
 
 app.frame('/transaction', (c) => {
+  const { buttonValue } = c
 
   return c.res({
-    action: '/transaction',
+    action: '/finish',
     image: (
       <div
         style={{
@@ -178,12 +224,12 @@ app.frame('/transaction', (c) => {
         }}
       >
           <div style={{ alignItems: 'center', color: 'black', display: 'flex', fontSize: 30, flexDirection: 'column', marginBottom: 60 }}>
-            <p style={{ justifyContent: 'center', textAlign: 'center', fontSize: 40}}>Swap</p>
+            <p style={{ justifyContent: 'center', textAlign: 'center', fontSize: 40}}>{buttonValue}</p>
           </div>
       </div>
     ),
     intents: [
-      <TextInput placeholder="Enter the amount..." />,
+      <TextInput placeholder="Enter ETH amount..." />,
       <Button.Transaction target="/transfer">Transfer</Button.Transaction>,
     ],
   });
@@ -199,6 +245,82 @@ app.transaction('/transfer', (c) => {
     value: parseEther(value),
   });
 });
+
+// app.transaction('/mint', async (c) => {
+//   // Contract transaction response.
+
+//   const { inputText } = c;
+//   const accounts =
+
+//   const value = inputText ? BigInt(inputText) : BigInt(0);
+//   // Convert the value to the smallest token unit (e.g., wei)
+//   const tokenValue = value * BigInt(10) ** BigInt(18); 
+
+//   const contractResponse = c.contract({
+//     abi,
+//     chainId: 'eip155:8453',
+//     functionName: 'approve',
+//     args: [
+//       `0x${accounts}`, // Convert accounts to string
+//       tokenValue, // Example: Approve 100 tokens
+//     ],
+//     to: '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed' // Replace with your actual token contract address
+//   });
+
+//   // Wait for the approval transaction to be mined
+//   await contractResponse;
+
+//   // Now, send the approved tokens to another address
+//   return c.contract({
+//     abi,
+//     chainId: 'eip155:8453',
+//     functionName: 'transfer',
+//     args: [
+//       '0x17b217d4b29063c96d59d5a54211582bee9cfb0d', // Replace with the address you want to send the tokens to
+//       tokenValue, // Example: Send 100 tokens
+//     ],
+//     to: '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed' // Replace with your actual token contract address
+//   });
+// })
+
+
+app.frame('/finish', (c) => {
+  const { transactionId } = c
+  return c.res({
+    image: (
+      <div
+        style={{
+          alignItems: 'center',
+          background: 'white',
+          backgroundSize: '100% 100%',
+          display: 'flex',
+          flexDirection: 'column',
+          flexWrap: 'nowrap',
+          height: '100%',
+          justifyContent: 'center',
+          textAlign: 'center',
+          width: '100%',
+          color: 'white',
+          fontSize: 60,
+          fontStyle: 'normal',
+          letterSpacing: '-0.025em',
+          lineHeight: 1.4,
+          marginTop: 0,
+          padding: '0 120px',
+          whiteSpace: 'pre-wrap',
+        }}
+      >
+          <div style={{ alignItems: 'center', color: 'black', display: 'flex', fontSize: 30, flexDirection: 'column', marginBottom: 60 }}>
+            <p style={{ justifyContent: 'center', textAlign: 'center', fontSize: 40}}>🧾 Transaction ID:</p>
+            <p>{transactionId}</p>
+          </div>
+      </div>
+    ),
+    intents: [
+      <Button.Reset>🏠 Home</Button.Reset>,
+    ],
+  })
+})
 
 // Export handlers
 export const GET = handle(app);
