@@ -1,8 +1,9 @@
 import { Button, Frog, TextInput, parseEther } from 'frog';
 import { handle } from 'frog/vercel';
 import fetch from 'node-fetch';
+import { abi } from './abi.js';
 // import { abiOnchain } from './abiOnchain.js'
-// import { abi } from './erc20Abi.js';
+// import { erc20Abi } from './erc20Abi.js';
 
 // Define the type for the CSV row
 interface SwapData {
@@ -290,19 +291,27 @@ app.transaction('/transfer/:shortcutAddress/:originChain', (c) => {
 
   // Log the data type of shortcutAddress and chainIdStr
   console.log('Shortcut Address:', shortcutAddress, typeof shortcutAddress);
-  console.log('Chain ID:', chainIdStr, typeof chainIdStr);
+  // console.log('Chain ID:', chainIdStr, typeof chainIdStr);
 
 
-  return c.res({ 
+  // return c.res({ 
+  //   chainId: chainIdStr,
+  //   method: 'eth_sendTransaction',
+  //   params: { 
+  //     to: `0x${shortcutAddress}`, 
+  //     value: parseEther(value), 
+  //   }, 
+  // });
+
+  return c.contract({
+    abi,
+    functionName: 'mint',
+    args: [69420n],
     chainId: chainIdStr,
-    method: 'eth_sendTransaction',
-    params: { 
-      to: `0x${shortcutAddress}`, 
-      value: parseEther(value), 
-    }, 
+    to: '0xeac856237a85b70338a32b55bf44b13ef1a7811d',
+    value: parseEther(value)
   });
 });
-
 
 
 // app.transaction('/mint', async (c) => {
