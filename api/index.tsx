@@ -18,25 +18,27 @@ let totalPages = 0;
 
 // Function to fetch and parse CSV data from GitHub
 async function readCSV() {
-  const csvUrl = 'https://raw.githubusercontent.com/Mr94t3z/request-farcaster-api/master/resources/data.csv'; // Replace with your actual URL
+  const csvUrl = 'https://raw.githubusercontent.com/Mr94t3z/request-farcaster-api/master/resources/data.csv';
   const response = await fetch(csvUrl);
   const csvText = await response.text();
 
-  // Parsing CSV text
-  // You might need a different parser here as csv-parser is a Node.js stream-based parser
-  // Consider using a simpler text-based CSV parsing method
-  const rows = csvText.split('\n'); // Basic example, might need adjustment for complex CSVs
+  const rows = csvText.split('\n');
   rows.forEach((row, index) => {
     if (index === 0) return; // Skip header row
-    const columns = row.split(','); // Assuming a simple CSV structure
-    const swapData: SwapData = {
-      shortcutAddress: columns[0], // Adjust according to your CSV structure
-      description: columns[1],
-      token: columns[2],
-      originChain: columns[3].trim(), // Trim the originChain value
-      destinationChain: columns[4].trim(), // Trim the destinationChain value
-    };
-    apiData.push(swapData);
+    const columns = row.split(',');
+    const originChain = columns[3].trim(); // Trim the originChain value
+    const destinationChain = columns[4].trim(); // Trim the destinationChain value
+    // Check if neither the origin chain nor the destination chain is 'Polygon', if so, add to apiData
+    if (originChain !== 'Polygon' && destinationChain !== 'Polygon') {
+      const swapData: SwapData = {
+        shortcutAddress: columns[0],
+        description: columns[1],
+        token: columns[2],
+        originChain: originChain,
+        destinationChain: destinationChain,
+      };
+      apiData.push(swapData);
+    }
   });
 
   totalPages = Math.ceil(apiData.length / itemsPerPage);
