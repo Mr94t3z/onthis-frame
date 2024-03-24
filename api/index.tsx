@@ -71,7 +71,7 @@ app.frame('/', (c) => {
   });
 });
 
-// Looping dashboard frame
+// Dashboard frame state
 app.frame('/dashboard', (c) => {
   const { buttonValue } = c;
 
@@ -148,7 +148,9 @@ app.frame('/dashboard', (c) => {
       currentPage > 1 && <Button value="back">⬅️ Previous</Button>,
       ...displayData.map(item => (
         // <Button action='/getAddress' value={item.description}>💰 {item.token}</Button>
-        <Button action='/transaction' value={item.description}>💰 {item.token}</Button>
+        <Button action={`/transaction/${encodeURIComponent(item.shortcutAddress)}/${encodeURIComponent(item.description)}/${encodeURIComponent(item.originChain)}`} value={`💰 ${item.token}`}>
+          {`💰 ${item.token}`} {/* Add content inside the button */}
+        </Button>
       )),
       currentPage < totalPages && <Button value="next">Next ➡️</Button>,
     ],
@@ -195,8 +197,8 @@ app.frame('/dashboard', (c) => {
 //   });
 // });
 
-app.frame('/transaction', (c) => {
-  const { buttonValue } = c
+app.frame('/transaction/:shortcutAddress/:description/:originChain', (c) => {
+  const { shortcutAddress, description, originChain } = c.req.param()
 
   return c.res({
     action: '/finish',
@@ -224,27 +226,53 @@ app.frame('/transaction', (c) => {
         }}
       >
           <div style={{ alignItems: 'center', color: 'black', display: 'flex', fontSize: 30, flexDirection: 'column', marginBottom: 60 }}>
-            <p style={{ justifyContent: 'center', textAlign: 'center', fontSize: 40}}>{buttonValue}</p>
+            <p style={{ justifyContent: 'center', textAlign: 'center', fontSize: 40}}>{description}</p>
           </div>
       </div>
     ),
     intents: [
-      <TextInput placeholder="Enter ETH amount..." />,
-      <Button.Transaction target="/transfer">Transfer</Button.Transaction>,
+      <TextInput placeholder="Enter ETH Amount..." />,
+      <Button.Transaction target={`/transfer/${shortcutAddress}/${originChain}`}>Transfer</Button.Transaction>,
     ],
   });
 });
 
-app.transaction('/transfer', (c) => {
+app.transaction('/transfer/:shortcutAddress/:originChain', (c) => {
   // Send transaction response.
   const { inputText } = c;
   const value = inputText ? inputText : '0';
+
+  // Get the chain ID
+  const getChainId = (chain: string) => {
+    switch (chain) {
+      case 'Optimism':
+        return 'eip155:10';
+      case 'Base':
+        return 'eip155:8453';
+      case 'Base Sepolia':
+        return 'eip155:84532';
+      case 'Zora':
+        return 'eip155:7777777';
+      default:
+        throw new Error(`Unsupported chain: ${chain}`);
+    }
+  };
+
+  const { shortcutAddress, originChain } = c.req.param();
+  const chainIdStr = getChainId(originChain);
+
+  // Log the chainId
+  console.log('Shortcut Address:', shortcutAddress);
+  console.log('Chain ID:', chainIdStr);
+
   return c.send({
-    chainId: 'eip155:84532',
-    to: '0x130946d8dF113e45f44e13575012D0cFF1E53e37',
+    chainId: chainIdStr,
+    to: `0x${shortcutAddress}`,
     value: parseEther(value),
   });
 });
+
+
 
 // app.transaction('/mint', async (c) => {
 //   // Contract transaction response.
