@@ -8,9 +8,7 @@
     "deploy": "vercel"
   },
   "dependencies": {
-    "csv-parser": "^3.0.0",
     "frog": "latest",
-    "fs": "^0.0.1-security",
     "hono": "latest"
   },
   "devDependencies": {

@@ -1,7 +1,6 @@
 import { Button, Frog, TextInput } from 'frog';
 import { handle } from 'frog/vercel';
-import csvParser from 'csv-parser';
-import fs from 'fs';
+import fetch from 'node-fetch';
 
 // Define the type for the CSV row
 interface SwapData {
@@ -17,28 +16,31 @@ let currentPage = 1;
 const itemsPerPage = 1;
 let totalPages = 0;
 
-// Function to read and parse CSV data
-function readCSV() {
-  fs.createReadStream('./api/resources/data.csv') 
-    .pipe(csvParser()) 
-    .on('data', (row: any) => {
-      // Transform row data to match SwapData interface
-      const swapData: SwapData = {
-        shortcutAddress: row['SHORTCUT ADDRESS'],
-        description: row['DESCRIPTION'],
-        token: row['TOKEN'],
-        originChain: row['ORIGIN CHAIN'],
-        destinationChain: row['DESTINATION CHAIN']
-      };
-      apiData.push(swapData);
-    })
-    .on('end', () => {
-      totalPages = Math.ceil(apiData.length / itemsPerPage);
-      console.log('CSV file successfully processed.');
-    })
-    .on('error', (error) => {
-      console.error('Error processing CSV file:', error);
-    });
+// Function to fetch and parse CSV data from GitHub
+async function readCSV() {
+  const csvUrl = 'https://raw.githubusercontent.com/Mr94t3z/request-farcaster-api/master/resources/data.csv'; // Replace with your actual URL
+  const response = await fetch(csvUrl);
+  const csvText = await response.text();
+
+  // Parsing CSV text
+  // You might need a different parser here as csv-parser is a Node.js stream-based parser
+  // Consider using a simpler text-based CSV parsing method
+  const rows = csvText.split('\n'); // Basic example, might need adjustment for complex CSVs
+  rows.forEach((row, index) => {
+    if (index === 0) return; // Skip header row
+    const columns = row.split(','); // Assuming a simple CSV structure
+    const swapData: SwapData = {
+      shortcutAddress: columns[0], // Adjust according to your CSV structure
+      description: columns[1],
+      token: columns[2],
+      originChain: columns[3].trim(), // Trim the originChain value
+      destinationChain: columns[4].trim(), // Trim the destinationChain value
+    };
+    apiData.push(swapData);
+  });
+
+  totalPages = Math.ceil(apiData.length / itemsPerPage);
+  console.log('CSV file successfully processed.');
 }
 
 // Call function to populate data
@@ -179,8 +181,8 @@ app.frame('/transaction', (c) => {
       </div>
     ),
     intents: [
-    <TextInput placeholder="Enter the amount..." />,
-     <Button value="submit">Transfer</Button>,
+      <TextInput placeholder="Enter the amount..." />,
+      <Button value="submit">Transfer</Button>,
     ],
   });
 });
