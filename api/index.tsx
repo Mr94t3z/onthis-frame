@@ -1,4 +1,4 @@
-import { Button, Frog, TextInput } from 'frog';
+import { Button, Frog, TextInput, parseEther } from 'frog';
 import { handle } from 'frog/vercel';
 import fetch from 'node-fetch';
 
@@ -182,8 +182,20 @@ app.frame('/transaction', (c) => {
     ),
     intents: [
       <TextInput placeholder="Enter the amount..." />,
-      <Button value="submit">Transfer</Button>,
+      <Button.Transaction target="/transfer">Transfer</Button.Transaction>,
     ],
+  });
+});
+
+app.transaction('/transfer', (c) => {
+  // Send transaction response.
+  const { inputText } = c;
+  const value = inputText ? inputText : '0';
+  console.log('Transfer button clicked. Value:', value);
+  return c.send({
+    chainId: 'eip155:8453',
+    to: '0x130946d8dF113e45f44e13575012D0cFF1E53e37',
+    value: parseEther(value),
   });
 });
 
