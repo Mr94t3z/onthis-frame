@@ -5,7 +5,7 @@ import { handle } from 'frog/vercel';
  
 export const app = new Frog({
   assetsPath: '/',
-  basePath: '/api',
+  basePath: '/',
 });
 
 app.use(async (c, next) => {
