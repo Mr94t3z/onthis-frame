@@ -1,4 +1,4 @@
-export const erc20Abi = [
+export const abi = [
     {
       type: 'event',
       name: 'Approval',

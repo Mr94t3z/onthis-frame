@@ -1,9 +1,9 @@
 import { Button, Frog, TextInput, parseEther } from 'frog';
 import { handle } from 'frog/vercel';
 import fetch from 'node-fetch';
-import { abi } from './abi.js';
-// import { abiOnchain } from './abiOnchain.js'
-// import { erc20Abi } from './erc20Abi.js';
+// import { abi } from './abi.js';
+// import { abi } from './abiOnchain.js'
+// import { abi } from './erc20Abi.js';
 
 // Define the type for the CSV row
 interface SwapData {
@@ -270,6 +270,10 @@ app.transaction('/transfer/:shortcutAddress/:originChain', (c) => {
   const { inputText } = c;
   const value = inputText ? inputText : '0';
 
+  // const value = inputText ? BigInt(inputText) : BigInt(0);
+  // const valueInEth = inputText ? parseFloat(inputText) : 0;
+  // const value = BigInt(Math.round(valueInEth * 10**18));
+
   // Get the chain ID
   const getChainId = (chain: string) => {
     switch (chain) {
@@ -294,31 +298,94 @@ app.transaction('/transfer/:shortcutAddress/:originChain', (c) => {
   // console.log('Chain ID:', chainIdStr, typeof chainIdStr);
 
 
+  return c.send({
+    chainId: chainIdStr,
+    to: '0x8d9da47221ea063cab0ec945074c363a0c0f6a93',
+    value: parseEther(value),
+  })
+
+
   // return c.res({ 
   //   chainId: chainIdStr,
   //   method: 'eth_sendTransaction',
   //   params: { 
-  //     to: `0x${shortcutAddress}`, 
+  //     to: shortcutAddress as `0x${string}`, 
   //     value: parseEther(value), 
   //   }, 
   // });
 
-  return c.contract({
-    abi,
-    functionName: 'mint',
-    args: [69420n],
-    chainId: chainIdStr,
-    to: '0xeac856237a85b70338a32b55bf44b13ef1a7811d',
-    value: parseEther(value)
-  });
+  // return c.contract({
+  //   abi,
+  //   chainId: chainIdStr,
+  //   functionName: 'transfer',
+  //   args: [
+  //     '0x0000000000000000000000000000000000000000',
+  //     value,
+  //   ],
+  //   to: shortcutAddress as `0x${string}`,
+  // });
+
+  // return c.contract({
+  //   abi,
+  //   chainId: chainIdStr,
+  //   functionName: 'mint',
+  //   args:[69420n],
+  //   to: '0x130946d8dF113e45f44e13575012D0cFF1E53e37',
+  //   value: parseEther(value),
+  // });
+  
+  
+  // const value = inputText ? BigInt(Math.round(parseFloat(inputText) * 1000)) : BigInt(0); // Convert floating-point number to integer
+
+  // // Convert the value to the smallest token unit (e.g., wei)
+  // const tokenValue = value * BigInt(10) ** BigInt(15); // Adjust the power of 10 accordingly based on token decimals
+
+//   const contractResponse = c.contract({
+//     abi,
+//     chainId: chainIdStr,
+//     functionName: 'approve',
+//     args: [
+//       '0x130946d8dF113e45f44e13575012D0cFF1E53e37',
+//       parseEther('0.005'), // Example: Approve 100 tokens
+//     ],
+//     to: '0x0000000000000000000000000000000000000000'
+//   });
+
+//   // Wait for the approval transaction to be mined
+//   await contractResponse;
+
+//   // // Now, send the approved tokens to another address
+//   return c.contract({
+//     abi,
+//     chainId: chainIdStr,
+//     functionName: 'transfer',
+//     args: [
+//       shortcutAddress as `0x${string}`,
+//       parseEther('0.005'), 
+//     ],
+//     to: '0x0000000000000000000000000000000000000000'
+//   });
 });
 
+app.transaction('/send-ether', (c) => {
+  const { inputText } = c;
+  const value = inputText ? inputText : '0';
 
-// app.transaction('/mint', async (c) => {
+  // Send transaction response.
+  return c.send({
+    chainId: 'eip155:8453',
+    to: '0x17b217d4b29063c96d59d5a54211582bee9cfb0d',
+    value: parseEther(value),
+  })
+})
+
+
+// app.transaction('/mint/:shortcutAddress', async (c) => {
 //   // Contract transaction response.
 
+//   const { shortcutAddress } = c.req.param();
+
 //   const { inputText } = c;
-//   const accounts =
 
 //   const value = inputText ? BigInt(inputText) : BigInt(0);
 //   // Convert the value to the smallest token unit (e.g., wei)
@@ -329,10 +396,10 @@ app.transaction('/transfer/:shortcutAddress/:originChain', (c) => {
 //     chainId: 'eip155:8453',
 //     functionName: 'approve',
 //     args: [
-//       `0x${accounts}`, // Convert accounts to string
+//       shortcutAddress as `0x${string}`, // Convert accounts to string
 //       tokenValue, // Example: Approve 100 tokens
 //     ],
-//     to: '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed' // Replace with your actual token contract address
+//     to: '0x4200000000000000000000000000000000000006' // Replace with your actual token contract address
 //   });
 
 //   // Wait for the approval transaction to be mined
@@ -344,10 +411,10 @@ app.transaction('/transfer/:shortcutAddress/:originChain', (c) => {
 //     chainId: 'eip155:8453',
 //     functionName: 'transfer',
 //     args: [
-//       '0x17b217d4b29063c96d59d5a54211582bee9cfb0d', // Replace with the address you want to send the tokens to
+//       shortcutAddress as `0x${string}`, // Replace with the address you want to send the tokens to
 //       tokenValue, // Example: Send 100 tokens
 //     ],
-//     to: '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed' // Replace with your actual token contract address
+//     to: '0x4200000000000000000000000000000000000006' // Replace with your actual token contract address
 //   });
 // })
 
@@ -386,6 +453,9 @@ app.frame('/finish', (c) => {
     ),
     intents: [
       <Button.Reset>🏠 Home</Button.Reset>,
+      <Button.Redirect location={`https://basescan.org/tx/${transactionId}`}>
+        View on BaseScan
+      </Button.Redirect>,
     ],
   })
 })
