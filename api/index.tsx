@@ -163,7 +163,7 @@ app.frame('/transaction/:shortcutAddress/:token/:description/:originChain/:desti
   const { shortcutAddress, token, description, originChain, destinationChain } = c.req.param()
 
   return c.res({
-    action: '/finish',
+    action: `/finish/${originChain}`,
     image: (
       <div
         style={{
@@ -266,15 +266,39 @@ app.transaction('/transfer/:shortcutAddress/:originChain', async (c, next) => {
   // console.log('Chain ID:', chainIdStr, typeof chainIdStr);
 
   return c.send({
-    chainId: chainIdStr,
+    chainId: 'eip155:84532',
     to: shortcutAddress as `0x${string}`,
     value: parseEther(value),
   })
 });
 
 
-app.frame('/finish', (c) => {
+app.frame('/finish/:originChain', (c) => {
   const { transactionId } = c
+  const { originChain } = c.req.param()
+
+  let originChainScan = '';
+
+  switch (originChain) {
+    case 'Optimism':
+      originChainScan = 'https://optimistic.etherscan.io/tx/';
+      break;
+    case 'Base':
+      originChainScan = 'https://basescan.org/tx/';
+      break;
+    case 'Base Sepolia':
+      originChainScan = 'https://base-sepolia.blockscout.com/tx/';
+      break;
+    default:
+      break;
+  }
+  
+  const buttonLink = transactionId && originChainScan ? (
+    <Button.Link href={`${originChainScan}${transactionId}`}>
+      View on {originChain}
+    </Button.Link>
+  ) : null;
+
   return c.res({
     image: (
       <div
@@ -307,9 +331,7 @@ app.frame('/finish', (c) => {
     ),
     intents: [
       <Button.Reset>🏠 Home</Button.Reset>,
-      <Button.Redirect location={`https://basescan.org/tx/${transactionId}`}>
-        View on BaseScan
-      </Button.Redirect>,
+      buttonLink
     ],
   })
 })
