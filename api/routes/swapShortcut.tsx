@@ -1,9 +1,6 @@
 import { Button, Frog, TextInput, parseEther } from 'frog';
 import { handle } from 'frog/vercel';
 import fetch from 'node-fetch';
-// import { abi } from './resources/abi.js';
-// import { abi } from './resources/abiOnchain.js'
-// import { abi } from './resources/erc20Abi.js';
 
 // Define the type for the CSV row
 interface SwapData {
@@ -56,10 +53,7 @@ async function readCSV() {
 readCSV();
 
 // Initialize Frog app
-export const app = new Frog({
-//   assetsPath: '/',
-//   basePath: '/api/frame',
-});
+export const app = new Frog();
 
 // Initial frame
 app.frame('/', (c) => {

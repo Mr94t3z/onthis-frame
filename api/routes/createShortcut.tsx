@@ -1,4 +1,7 @@
-import { Frog } from 'frog'
+import { Frog } from 'frog';
+// import { abi } from './resources/abi.js';
+// import { abi } from './resources/abiOnchain.js';
+// import { abi } from './resources/erc20Abi.js';
  
 export const app = new Frog()
  
