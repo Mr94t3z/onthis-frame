@@ -266,7 +266,7 @@ app.transaction('/transfer/:shortcutAddress/:originChain', async (c, next) => {
   // console.log('Chain ID:', chainIdStr, typeof chainIdStr);
 
   return c.send({
-    chainId: 'eip155:84532',
+    chainId: chainIdStr,
     to: shortcutAddress as `0x${string}`,
     value: parseEther(value),
   })
@@ -288,6 +288,9 @@ app.frame('/finish/:originChain', (c) => {
       break;
     case 'Base Sepolia':
       originChainScan = 'https://base-sepolia.blockscout.com/tx/';
+      break;
+    case 'Zora':
+      originChainScan = 'https://zora.superscan.network/tx/';
       break;
     default:
       break;
