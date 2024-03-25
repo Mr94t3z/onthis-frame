@@ -22,7 +22,7 @@ const unsupportedChain = ['Mainnet', 'Arbitrum', 'Polygon'];
 
 async function readCSV() {
   // const csvUrl = 'https://raw.githubusercontent.com/{GitHub Username}/onthis-frame/master/api/resources/data.csv';
-  const csvUrl = 'https://raw.githubusercontent.com/Mr94t3z/onthis-frame/master/api/resources/data.csv';
+  const csvUrl = 'https://raw.githubusercontent.com/Mr94t3z/request-farcaster-api/master/resources/data.csv';
   const response = await fetch(csvUrl);
   const csvText = await response.text();
 
@@ -63,17 +63,17 @@ export const app = new Frog({
 app.frame('/', (c) => {
   currentPage = 1;
   return c.res({
-    action: '/dashboard',
-    image: '/images/dashboard.jpeg',
+    action: '/swap-shortcut',
+    image: '/images/swap-shortcut.jpeg',
     intents: [
       <Button action="/create-shortcut">👉🏻 Create Shortcut</Button>,
-      <Button action="/dashboard">Swap Shortcut 👈🏻</Button>,
+      <Button action="/swap-shortcut">Swap Shortcut 👈🏻</Button>,
     ],
   });
 });
 
-// Dashboard frame state
-app.frame('/dashboard', (c) => {
+// Swap Shortcut frame state
+app.frame('/swap-shortcut', (c) => {
   const { buttonValue } = c;
 
   if (buttonValue === 'next' && currentPage < totalPages) {
@@ -87,7 +87,7 @@ app.frame('/dashboard', (c) => {
   const displayData = apiData.slice(startIndex, endIndex);
 
   return c.res({
-    action: '/dashboard',
+    action: '/swap-shortcut',
     image: (
       <div
         style={{
@@ -220,7 +220,7 @@ app.frame('/transaction/:shortcutAddress/:token/:description/:originChain/:desti
     ),
     intents: [
       <TextInput placeholder="Enter ETH Amount..." />,
-      // <Button action={`/dashboard`}>Cancel ❌</Button>,
+      // <Button action={`/swap-shortcut`}>Cancel ❌</Button>,
       <Button.Reset>Cancel ❌</Button.Reset>,
       <Button.Transaction target={`/transfer/${shortcutAddress}/${originChain}`}>Transfer ETH</Button.Transaction>,
     ],
