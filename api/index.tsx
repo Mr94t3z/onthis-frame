@@ -346,6 +346,7 @@ app.frame('/create-shortcut', (c) => {
     image: '/images/create-shortcut.jpeg',
     intents: [
       <TextInput placeholder="Enter Pool Address..." />,
+      <Button action='/'>Cancel ❌</Button>,
       <Button.Transaction target="/submit-create-shortcut">Create Shortcut</Button.Transaction>,
     ]
   })
