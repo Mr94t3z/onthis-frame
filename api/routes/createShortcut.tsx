@@ -10,3 +10,5 @@ app.frame('/', (c) => {
     image : '/images/dashboard_black.jpeg',
   })
 })
+
+export default app;
