@@ -68,7 +68,7 @@ app.frame('/', (c) => {
     action: '/dashboard',
     image: '/images/dashboard.jpeg',
     intents: [
-      <Button action="/dashboard">Let's Get Started!</Button>,
+      <Button action="/dashboard">Let's Started ✅</Button>,
     ],
   });
 });
