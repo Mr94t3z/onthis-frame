@@ -1,5 +1,4 @@
 SHORTCUT ADDRESS,DESCRIPTION,TOKEN,ORIGIN CHAIN,DESTINATION CHAIN
-0x48f9804ffb674dec1c892e3373a5fec0532e291d,Swap into $ETH on Base Sepolia,ETH,Base Sepolia,Base Sepolia
 0x48f9804ffb674dec1c892e3373a5fec0532e291d,Swap into $USDT on Mainnet,USDT,Mainnet,Mainnet
 0x410dbcdae4fb647076319453709fa860fc0246a1,Swap into $NORMIE on Base,NORMIE,Mainnet,Base
 0x77910b6db7a06604ff1115e7782214ce29f04220,Swap into $ZTX on Arbitrum,ZTX,Mainnet,Arbitrum
