@@ -68,7 +68,7 @@ app.frame('/', (c) => {
     action: '/dashboard',
     image: '/images/dashboard.jpeg',
     intents: [
-      <Button action="/dashboard" value="dashboard page">Let's Get Started!</Button>,
+      <Button action="/dashboard">Let's Get Started!</Button>,
     ],
   });
 });
@@ -149,7 +149,7 @@ app.frame('/dashboard', (c) => {
     intents: [
       currentPage > 1 && <Button value="back">⬅️ Previous</Button>,
       ...displayData.map(item => (
-        <Button action={`/transaction/${encodeURIComponent(item.shortcutAddress)}/${encodeURIComponent(item.token)}/${encodeURIComponent(item.description)}/${encodeURIComponent(item.originChain)}/${encodeURIComponent(item.destinationChain)}`} value={`💰 ${item.token}`}>
+        <Button action={`/transaction/${item.shortcutAddress}/${item.token}/${item.description}/${item.originChain}/${item.destinationChain}`} value={`💰 ${item.token}`}>
           {`💰 ${item.token}`}
         </Button>
       )),
@@ -221,6 +221,7 @@ app.frame('/transaction/:shortcutAddress/:token/:description/:originChain/:desti
     ),
     intents: [
       <TextInput placeholder="Enter ETH Amount..." />,
+      <Button action={`/dashboard`}>Cancel ❌</Button>,
       <Button.Transaction target={`/transfer/${shortcutAddress}/${originChain}`}>Transfer ETH</Button.Transaction>,
     ],
   });
