@@ -1,5 +1,5 @@
 import { Frog } from 'frog'
-import { app as createShortcut } from './routes/createShortcut.js'
+// import { app as createShortcut } from './routes/createShortcut.js'
 import { app as swapShortcut } from './routes/swapShortcut.js'
 import { handle } from 'frog/vercel';
  
@@ -35,7 +35,7 @@ app.frame('/', (c) => {
 //   console.log('Outgoing response:', c.res);
 // });
  
-app.route('/create-shortcut', createShortcut)
+// app.route('/create-shortcut', createShortcut)
 app.route('/swap-shortcut', swapShortcut)
 
 // Export handlers
