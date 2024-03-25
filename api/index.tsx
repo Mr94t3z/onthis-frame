@@ -220,7 +220,8 @@ app.frame('/transaction/:shortcutAddress/:token/:description/:originChain/:desti
     ),
     intents: [
       <TextInput placeholder="Enter ETH Amount..." />,
-      <Button action={`/dashboard`}>Cancel ❌</Button>,
+      // <Button action={`/dashboard`}>Cancel ❌</Button>,
+      <Button.Reset>Cancel ❌</Button.Reset>,
       <Button.Transaction target={`/transfer/${shortcutAddress}/${originChain}`}>Transfer ETH</Button.Transaction>,
     ],
   });
@@ -346,7 +347,7 @@ app.frame('/create-shortcut', (c) => {
     image: '/images/create-shortcut.jpeg',
     intents: [
       <TextInput placeholder="Enter Pool Address..." />,
-      <Button action='/'>Cancel ❌</Button>,
+      <Button.Reset>Cancel ❌</Button.Reset>,
       <Button.Transaction target="/submit-create-shortcut">Create Shortcut</Button.Transaction>,
     ]
   })
