@@ -1,12 +1,18 @@
 import { Frog } from 'frog'
-import { app as createShortcut } from './routes/createShortcut.js'
-import { app as swapShortcut } from './routes/swapShortcut.js'
+// import { app as createShortcut } from './routes/createShortcut.js'
+// import { app as swapShortcut } from './routes/swapShortcut.js'
 import { handle } from 'frog/vercel';
  
 export const app = new Frog({
   assetsPath: '/',
-  basePath: '/api',
+  basePath: '/api/frame',
 });
+
+app.frame('/', (c) => {
+  return c.res({
+    image : '/images/dashboard_black.jpeg',
+  })
+})
 
 // app.use(async (c, next) => {
 
@@ -29,8 +35,8 @@ export const app = new Frog({
 //   console.log('Outgoing response:', c.res);
 // });
  
-app.route('/create-shortcut', createShortcut)
-app.route('/swap-shortcut', swapShortcut)
+// app.route('/create-shortcut', createShortcut)
+// app.route('/swap-shortcut', swapShortcut)
 
 // Export handlers
 export const GET = handle(app);
