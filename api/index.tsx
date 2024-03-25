@@ -1,6 +1,7 @@
 import { Frog } from 'frog'
 import { app as createShortcut } from './routes/createShortcut.js'
 import { app as swapShortcut } from './routes/swapShortcut.js'
+import { handle } from 'frog/vercel';
  
 export const app = new Frog({
   assetsPath: '/',
@@ -31,4 +32,6 @@ app.use(async (c, next) => {
 app.route('/create-shortcut', createShortcut)
 app.route('/swap-shortcut', swapShortcut)
 
-export default app
+// Export handlers
+export const GET = handle(app);
+export const POST = handle(app);
