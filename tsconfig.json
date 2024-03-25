@@ -16,5 +16,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["**/*.ts", "**/*.tsx", "**/*.mtsx", "api/onchainAbi.js"]
+  "include": ["**/*.ts", "**/*.tsx", "**/*.mtsx"]
 }
