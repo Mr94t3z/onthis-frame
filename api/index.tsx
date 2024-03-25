@@ -4,7 +4,7 @@ import { app as swapShortcut } from './routes/swapShortcut.js'
  
 export const app = new Frog({
   assetsPath: '/',
-  basePath: '/',
+  basePath: '/api',
 });
 
 app.use(async (c, next) => {

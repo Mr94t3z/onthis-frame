@@ -9,8 +9,8 @@ npm install
 npm run dev
 ```
 
-Head to http://localhost:5173/create-shortcut for Create Shortcut.
-Head to http://localhost:5173/swap-shortcut for Swap Shortcut.
+Head to http://localhost:5173/api/create-shortcut for Create Shortcut.
+Head to http://localhost:5173/api/swap-shortcut for Swap Shortcut.
 
 ## Deploy to Vercel
 
