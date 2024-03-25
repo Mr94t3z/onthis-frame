@@ -30,3 +30,5 @@ app.use(async (c, next) => {
  
 app.route('/create-shortcut', createShortcut)
 app.route('/swap-shortcut', swapShortcut)
+
+export default app
