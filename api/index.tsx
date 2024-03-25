@@ -23,7 +23,8 @@ let totalPages = 0;
 const unsupportedChain = ['Mainnet', 'Arbitrum', 'Polygon'];
 
 async function readCSV() {
-  const csvUrl = 'https://raw.githubusercontent.com/Mr94t3z/request-farcaster-api/master/resources/data.csv';
+  // const csvUrl = 'https://raw.githubusercontent.com/{GitHub Username}/onthis-frame/master/api/resources/data.csv';
+  const csvUrl = 'https://raw.githubusercontent.com/Mr94t3z/onthis-frame/master/api/resources/data.csv';
   const response = await fetch(csvUrl);
   const csvText = await response.text();
 
@@ -148,9 +149,8 @@ app.frame('/dashboard', (c) => {
     intents: [
       currentPage > 1 && <Button value="back">⬅️ Previous</Button>,
       ...displayData.map(item => (
-        // <Button action='/getAddress' value={item.description}>💰 {item.token}</Button>
         <Button action={`/transaction/${encodeURIComponent(item.shortcutAddress)}/${encodeURIComponent(item.token)}/${encodeURIComponent(item.description)}/${encodeURIComponent(item.originChain)}/${encodeURIComponent(item.destinationChain)}`} value={`💰 ${item.token}`}>
-          {`💰 ${item.token}`} {/* Add content inside the button */}
+          {`💰 ${item.token}`}
         </Button>
       )),
       currentPage < totalPages && <Button value="next">Next ➡️</Button>,
@@ -158,45 +158,6 @@ app.frame('/dashboard', (c) => {
   });
 });
 
-// app.frame('/getAddress', (c) => {
-//   const { buttonValue } = c
-
-//   return c.res({
-//     action: '/transaction',
-//     image: (
-//       <div
-//         style={{
-//           alignItems: 'center',
-//           background: 'white',
-//           backgroundSize: '100% 100%',
-//           display: 'flex',
-//           flexDirection: 'column',
-//           flexWrap: 'nowrap',
-//           height: '100%',
-//           justifyContent: 'center',
-//           textAlign: 'center',
-//           width: '100%',
-//           color: 'white',
-//           fontSize: 60,
-//           fontStyle: 'normal',
-//           letterSpacing: '-0.025em',
-//           lineHeight: 1.4,
-//           marginTop: 0,
-//           padding: '0 120px',
-//           whiteSpace: 'pre-wrap',
-//         }}
-//       >
-//           <div style={{ alignItems: 'center', color: 'black', display: 'flex', fontSize: 30, flexDirection: 'column', marginBottom: 60 }}>
-//             <p style={{ justifyContent: 'center', textAlign: 'center', fontSize: 40}}>{buttonValue}</p>
-//           </div>
-//       </div>
-//     ),
-//     intents: [
-//       <TextInput placeholder="Enter your EVM wallet address..." />,
-//       <Button action='/transaction' value={buttonValue}>Submit</Button>
-//     ],
-//   });
-// });
 
 app.frame('/transaction/:shortcutAddress/:token/:description/:originChain/:destinationChain', (c) => {
   const { shortcutAddress, token, description, originChain, destinationChain } = c.req.param()
@@ -265,14 +226,21 @@ app.frame('/transaction/:shortcutAddress/:token/:description/:originChain/:desti
   });
 });
 
-app.transaction('/transfer/:shortcutAddress/:originChain', (c) => {
+app.transaction('/transfer/:shortcutAddress/:originChain', async (c, next) => {
+  await next();
+  const txParams = await c.res.json();
+  txParams.attribution = false;
+  console.log(txParams);
+  c.res = new Response(JSON.stringify(txParams), {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+},
+(c) => {
   // Send transaction response.
   const { inputText } = c;
   const value = inputText ? inputText : '0';
-
-  // const value = inputText ? BigInt(inputText) : BigInt(0);
-  // const valueInEth = inputText ? parseFloat(inputText) : 0;
-  // const value = BigInt(Math.round(valueInEth * 10**18));
 
   // Get the chain ID
   const getChainId = (chain: string) => {
@@ -294,129 +262,15 @@ app.transaction('/transfer/:shortcutAddress/:originChain', (c) => {
   const chainIdStr = getChainId(originChain);
 
   // Log the data type of shortcutAddress and chainIdStr
-  console.log('Shortcut Address:', shortcutAddress, typeof shortcutAddress);
+  // console.log('Shortcut Address:', shortcutAddress, typeof shortcutAddress);
   // console.log('Chain ID:', chainIdStr, typeof chainIdStr);
-
 
   return c.send({
     chainId: chainIdStr,
-    to: '0x8d9da47221ea063cab0ec945074c363a0c0f6a93',
+    to: shortcutAddress as `0x${string}`,
     value: parseEther(value),
   })
-
-
-  // return c.res({ 
-  //   chainId: chainIdStr,
-  //   method: 'eth_sendTransaction',
-  //   params: { 
-  //     to: shortcutAddress as `0x${string}`, 
-  //     value: parseEther(value), 
-  //   }, 
-  // });
-
-  // return c.contract({
-  //   abi,
-  //   chainId: chainIdStr,
-  //   functionName: 'transfer',
-  //   args: [
-  //     '0x0000000000000000000000000000000000000000',
-  //     value,
-  //   ],
-  //   to: shortcutAddress as `0x${string}`,
-  // });
-
-  // return c.contract({
-  //   abi,
-  //   chainId: chainIdStr,
-  //   functionName: 'mint',
-  //   args:[69420n],
-  //   to: '0x130946d8dF113e45f44e13575012D0cFF1E53e37',
-  //   value: parseEther(value),
-  // });
-  
-  
-  // const value = inputText ? BigInt(Math.round(parseFloat(inputText) * 1000)) : BigInt(0); // Convert floating-point number to integer
-
-  // // Convert the value to the smallest token unit (e.g., wei)
-  // const tokenValue = value * BigInt(10) ** BigInt(15); // Adjust the power of 10 accordingly based on token decimals
-
-//   const contractResponse = c.contract({
-//     abi,
-//     chainId: chainIdStr,
-//     functionName: 'approve',
-//     args: [
-//       '0x130946d8dF113e45f44e13575012D0cFF1E53e37',
-//       parseEther('0.005'), // Example: Approve 100 tokens
-//     ],
-//     to: '0x0000000000000000000000000000000000000000'
-//   });
-
-//   // Wait for the approval transaction to be mined
-//   await contractResponse;
-
-//   // // Now, send the approved tokens to another address
-//   return c.contract({
-//     abi,
-//     chainId: chainIdStr,
-//     functionName: 'transfer',
-//     args: [
-//       shortcutAddress as `0x${string}`,
-//       parseEther('0.005'), 
-//     ],
-//     to: '0x0000000000000000000000000000000000000000'
-//   });
 });
-
-app.transaction('/send-ether', (c) => {
-  const { inputText } = c;
-  const value = inputText ? inputText : '0';
-
-  // Send transaction response.
-  return c.send({
-    chainId: 'eip155:8453',
-    to: '0x17b217d4b29063c96d59d5a54211582bee9cfb0d',
-    value: parseEther(value),
-  })
-})
-
-
-// app.transaction('/mint/:shortcutAddress', async (c) => {
-//   // Contract transaction response.
-
-//   const { shortcutAddress } = c.req.param();
-
-//   const { inputText } = c;
-
-//   const value = inputText ? BigInt(inputText) : BigInt(0);
-//   // Convert the value to the smallest token unit (e.g., wei)
-//   const tokenValue = value * BigInt(10) ** BigInt(18); 
-
-//   const contractResponse = c.contract({
-//     abi,
-//     chainId: 'eip155:8453',
-//     functionName: 'approve',
-//     args: [
-//       shortcutAddress as `0x${string}`, // Convert accounts to string
-//       tokenValue, // Example: Approve 100 tokens
-//     ],
-//     to: '0x4200000000000000000000000000000000000006' // Replace with your actual token contract address
-//   });
-
-//   // Wait for the approval transaction to be mined
-//   await contractResponse;
-
-//   // Now, send the approved tokens to another address
-//   return c.contract({
-//     abi,
-//     chainId: 'eip155:8453',
-//     functionName: 'transfer',
-//     args: [
-//       shortcutAddress as `0x${string}`, // Replace with the address you want to send the tokens to
-//       tokenValue, // Example: Send 100 tokens
-//     ],
-//     to: '0x4200000000000000000000000000000000000006' // Replace with your actual token contract address
-//   });
-// })
 
 
 app.frame('/finish', (c) => {
