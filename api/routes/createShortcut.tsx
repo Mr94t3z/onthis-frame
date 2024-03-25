@@ -47,10 +47,38 @@ app.frame('/finish', (c) => {
   const { transactionId } = c
   return c.res({
     image: (
-      <div style={{ color: 'white', display: 'flex', fontSize: 60 }}>
-        Transaction ID: {transactionId}
+        <div
+        style={{
+          alignItems: 'center',
+          background: 'white',
+          backgroundSize: '100% 100%',
+          display: 'flex',
+          flexDirection: 'column',
+          flexWrap: 'nowrap',
+          height: '100%',
+          justifyContent: 'center',
+          textAlign: 'center',
+          width: '100%',
+          color: 'white',
+          fontSize: 60,
+          fontStyle: 'normal',
+          letterSpacing: '-0.025em',
+          lineHeight: 1.4,
+          marginTop: 0,
+          padding: '0 120px',
+          whiteSpace: 'pre-wrap',
+        }}
+      >
+          <div style={{ alignItems: 'center', color: 'black', display: 'flex', fontSize: 30, flexDirection: 'column', marginBottom: 60 }}>
+          <p style={{ justifyContent: 'center', textAlign: 'center', fontSize: 40}}>🧾 Transaction ID:</p>
+            <p>{transactionId}</p>
+          </div>
       </div>
-    )
+    ),
+    intents: [
+        <Button.Reset>🏠 Home</Button.Reset>,
+        <Button.Link href={`https://basescan.org/tx/${transactionId}`}>View Tx</Button.Link>,
+    ]
   })
 })
 
@@ -79,7 +107,6 @@ app.transaction('/create', async (c, next) => {
         BigInt(8453), // _cId as uint256, assuming it's the same as your chainId
       ],
       to : '0x892C413A65193bC42A5FF23103E6231465b3861c',
-      
     })
   })
   
