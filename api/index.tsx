@@ -220,8 +220,8 @@ app.frame('/transaction/:shortcutAddress/:token/:description/:originChain/:desti
     ),
     intents: [
       <TextInput placeholder="Enter ETH Amount..." />,
-      // <Button action={`/swap-shortcut`}>Cancel ❌</Button>,
-      <Button.Reset>Cancel ❌</Button.Reset>,
+      // <Button action={`/swap-shortcut`}>Cancel 🙅🏻‍♂️</Button>,
+      <Button.Reset>Cancel 🙅🏻‍♂️</Button.Reset>,
       <Button.Transaction target={`/transfer/${shortcutAddress}/${originChain}`}>Transfer ETH</Button.Transaction>,
     ],
   });
@@ -347,7 +347,7 @@ app.frame('/create-shortcut', (c) => {
     image: '/images/create-shortcut.jpeg',
     intents: [
       <TextInput placeholder="Enter Pool Address..." />,
-      <Button.Reset>Cancel ❌</Button.Reset>,
+      <Button.Reset>Cancel 🙅🏻‍♂️</Button.Reset>,
       <Button.Transaction target="/submit-create-shortcut">Create Shortcut</Button.Transaction>,
     ]
   })
@@ -412,6 +412,8 @@ async (c) => {
 
   const response = await fetch(`https://create.onthis.xyz/api/highest-pool-tvl/${address}/${_cId}`);
   const data = await response.json();
+
+  console.log(data);
 
   if (!data || !data.pool) {
       throw new Error("Failed to fetch pool address from API");
