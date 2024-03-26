@@ -63,7 +63,6 @@ export const app = new Frog({
 app.frame('/', (c) => {
   currentPage = 1;
   return c.res({
-    action: '/swap-shortcut',
     image: '/images/swap-shortcut.jpeg',
     intents: [
       <Button action="/create-shortcut">👉🏻 Create Shortcut</Button>,
@@ -346,15 +345,62 @@ app.frame('/create-shortcut', (c) => {
     action: '/finish-create-shortcut',
     image: '/images/create-shortcut.jpeg',
     intents: [
-      <TextInput placeholder="Enter Pool Address..." />,
+      <TextInput placeholder="Enter Token Address..." />,
       <Button.Reset>Cancel 🙅🏻‍♂️</Button.Reset>,
       <Button.Transaction target="/submit-create-shortcut">Create Shortcut</Button.Transaction>,
     ]
   })
 })
+
+app.transaction('/submit-create-shortcut', async (c, next) => {
+  await next();
+  const txParams = await c.res.json();
+  txParams.attribution = false;
+  console.log(txParams);
+  c.res = new Response(JSON.stringify(txParams), {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+},
+async (c) => {
+  const { inputText } = c;
+
+  // Make an HTTP request to the API endpoint
+  const address = inputText as `0x${string}`;
+
+  if(!address) {
+    throw new Error("Not a valid address!");
+  }
+
+  const _cId = '8453';
+
+  const response = await fetch(`https://create.onthis.xyz/api/highest-pool-tvl/${address}/${_cId}`);
+  const data = await response.json();
+
+  console.log(data);
+
+  if (!data || !data.pool) {
+      throw new Error("Failed to fetch pool address from API");
+  }
+
+  // Contract transaction call
+  return c.contract({
+    abi: abi,
+    chainId: 'eip155:8453',
+    functionName: 'createShortcut',
+    args: [
+      data.pool, // Use the pool address fetched from the API
+      data.pType, // Use the pType from the API response
+      BigInt(_cId), // Use the chainId from the request context
+    ],
+    to : '0x892C413A65193bC42A5FF23103E6231465b3861c',
+  });
+});
  
 app.frame('/finish-create-shortcut', (c) => {
   const { transactionId } = c
+    
   return c.res({
     image: (
         <div
@@ -392,46 +438,41 @@ app.frame('/finish-create-shortcut', (c) => {
   })
 })
 
-app.transaction('/submit-create-shortcut', async (c, next) => {
-  await next();
-  const txParams = await c.res.json();
-  txParams.attribution = false;
-  console.log(txParams);
-  c.res = new Response(JSON.stringify(txParams), {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-},
-async (c) => {
-  const { inputText } = c;
-
-  // Make an HTTP request to the API endpoint
-  const address = inputText as `0x${string}`;
-  const _cId = '8453';
-
-  const response = await fetch(`https://create.onthis.xyz/api/highest-pool-tvl/${address}/${_cId}`);
-  const data = await response.json();
-
-  console.log(data);
-
-  if (!data || !data.pool) {
-      throw new Error("Failed to fetch pool address from API");
-  }
-
-  // Contract transaction call
-  return c.contract({
-    abi: abi,
-    chainId: 'eip155:8453',
-    functionName: 'createShortcut',
-    args: [
-      data.pool, // Use the pool address fetched from the API
-      data.pType, // Use the pType from the API response
-      BigInt(_cId), // Use the chainId from the request context
-    ],
-    to : '0x892C413A65193bC42A5FF23103E6231465b3861c',
-  });
-});
+// app.frame('/failed-create-shortcut', (c) => {
+//   return c.res({
+//     image: (
+//         <div
+//         style={{
+//           alignItems: 'center',
+//           background: 'white',
+//           backgroundSize: '100% 100%',
+//           display: 'flex',
+//           flexDirection: 'column',
+//           flexWrap: 'nowrap',
+//           height: '100%',
+//           justifyContent: 'center',
+//           textAlign: 'center',
+//           width: '100%',
+//           color: 'white',
+//           fontSize: 60,
+//           fontStyle: 'normal',
+//           letterSpacing: '-0.025em',
+//           lineHeight: 1.4,
+//           marginTop: 0,
+//           padding: '0 120px',
+//           whiteSpace: 'pre-wrap',
+//         }}
+//       >
+//           <div style={{ alignItems: 'center', color: 'black', display: 'flex', fontSize: 30, flexDirection: 'column', marginBottom: 60 }}>
+//           <p style={{ justifyContent: 'center', textAlign: 'center', fontSize: 40}}>🧾 Transaction failure.</p>
+//           </div>
+//       </div>
+//     ),
+//     intents: [
+//       <Button action="/create-shortcut">← Try Again</Button>,
+//     ]
+//   })
+// })
 
 // Export handlers
 export const GET = handle(app);
