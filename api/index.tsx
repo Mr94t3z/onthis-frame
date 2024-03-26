@@ -392,40 +392,44 @@ app.frame('/finish-create-shortcut', (c) => {
   })
 })
 
- 
 app.transaction('/submit-create-shortcut', async (c, next) => {
-    await next();
-    const txParams = await c.res.json();
-    txParams.attribution = false;
-    console.log(txParams);
-    c.res = new Response(JSON.stringify(txParams), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-  },
-   (c) => {
-    const { inputText } = c;
+  await next();
+  const txParams = await c.res.json();
+  txParams.attribution = false;
+  console.log(txParams);
+  c.res = new Response(JSON.stringify(txParams), {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+},
+async (c) => {
+  const { inputText } = c;
 
-    // const isAddress = inputText as `0x${string}`;
+  // Make an HTTP request to the API endpoint
+  const address = inputText as `0x${string}`;
+  const _cId = '8453';
 
-    // if (!isAddress) {
-    //   action :'/create-shortcut';
-    // }
+  const response = await fetch(`https://create.onthis.xyz/api/highest-pool-tvl/${address}/${_cId}`);
+  const data = await response.json();
 
-    // Contract transaction call
-    return c.contract({
-      abi: abi,
-      chainId: 'eip155:8453',
-      functionName: 'createShortcut',
-      args: [
-        inputText as `0x${string}`, // Pool address
-        3, // pType as uint8
-        BigInt(8453), // _cId as uint256, assuming it's the same as your chainId
-      ],
-      to : '0x892C413A65193bC42A5FF23103E6231465b3861c',
-    })
-  })
+  if (!data || !data.pool) {
+      throw new Error("Failed to fetch pool address from API");
+  }
+
+  // Contract transaction call
+  return c.contract({
+    abi: abi,
+    chainId: 'eip155:8453',
+    functionName: 'createShortcut',
+    args: [
+      data.pool, // Use the pool address fetched from the API
+      data.pType, // Use the pType from the API response
+      BigInt(_cId), // Use the chainId from the request context
+    ],
+    to : '0x892C413A65193bC42A5FF23103E6231465b3861c',
+  });
+});
 
 // Export handlers
 export const GET = handle(app);
