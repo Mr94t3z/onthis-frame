@@ -375,8 +375,8 @@ app.frame('/create-shortcut', (c) => {
     action: '/destination-chain-shortcut',
     image: '/images/origin-chain.jpeg',
     intents: [
-      <Button value="Optimism">Optimism</Button>,
-      <Button value="Optimism">Base</Button>,
+      <Button value="10">Optimism</Button>,
+      <Button value="8453">Base</Button>,
     ]
   })
 })
@@ -422,11 +422,13 @@ app.frame('/validate-shortcut/:originChain/:destinationChain', async (c) => {
   const { originChain, destinationChain } = c.req.param();
 
   const address = inputText as `0x${string}`;
+  const chainId = originChain;
 
   let validate_address, response;
 
   try {
-    const request = await fetch(`https://create.onthis.xyz/api/highest-pool-tvl/${address}/${destinationChain}`);
+    // const request = await fetch(`${process.env.ONCHAIN_HIGHEST_POOL_API_URL}/${address}/${chainId}`);
+    const request = await fetch(`https://create.onthis.xyz/api/highest-pool-tvl/${address}/${chainId}`);
     const data = await request.json();
 
     if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address) || data === null || data.pool === null || data.pool === '') {
@@ -438,23 +440,21 @@ app.frame('/validate-shortcut/:originChain/:destinationChain', async (c) => {
     }    
   } catch (error) {
     console.error('An error occurred while fetching or processing data:', error);
-    validate_address = `❌ An error occurred while fetching or processing data: ${(error as Error).message}`;
+    validate_address = `❌ The token address seems not valid or cannot be found in the highest pool!`;
   }
   
 
-  console.log(destinationChain);
-
   function getOriginChainInfo(originChain: string) {
     switch (originChain) {
-      case 'Mainnet':
+      case '1':
         return { logo: '/images/chain/eth.png', name: 'Mainnet' };
-      case 'Optimism':
+      case '10':
         return { logo: '/images/chain/op.png', name: 'Optimism' };
-      case 'Polygon':
+      case '137':
         return { logo: '/images/chain/polygon.png', name: 'Polygon' };
-      case 'Base':
+      case '8453':
         return { logo: '/images/chain/base.png', name: 'Base' };
-      case 'Arbitrum':
+      case '42161':
         return { logo: '/images/chain/arb.png', name: 'Arbitrum' };
       default:
         return { logo: '/images/icon.png', name: '' };
@@ -556,25 +556,45 @@ async (c) => {
   const {originChain, destinationChain, response} = c.req.param();
 
   const _cId = destinationChain;
-  const data = response;
-  console.log(data)
+  const { pType, pool } = JSON.parse(response);
 
   // Get the chain ID
   const getChainId = (chain: string) => {
     switch (chain) {
-      case 'Optimism':
+      case '10':
         return 'eip155:10';
-      case 'Base':
+      case '8453':
         return 'eip155:8453';
-      case 'Base Sepolia':
+      case '84532':
         return 'eip155:84532';
-      case 'Zora':
+      case '7777777':
         return 'eip155:7777777';
       default:
         throw new Error(`Unsupported chain: ${chain}`);
     }
   };
+
   const chainIdStr = getChainId(originChain);
+
+  // Get Contract Chain
+  const getContractChain = (contractChain: string) => {
+    switch (contractChain) {
+      case '1':
+        return process.env.MAINNET_ONCHAIN_CONTRACT;
+      case '10':
+        return process.env.OPTIMISM_ONCHAIN_CONTRACT;
+      case '137':
+        return process.env.POLYGON_ONCHAIN_CONTRACT;
+      case '8453':
+        return process.env.BASE_ONCHAIN_CONTRACT;
+      case '42161':
+        return process.env.ARBITRUM_ONCHAIN_CONTRACT;
+      default:
+        throw new Error(`Unsupported chain: ${contractChain}`);
+    }
+  };
+
+  const contractChain = getContractChain(originChain);
 
   // Contract transaction call
   return c.contract({
@@ -582,11 +602,11 @@ async (c) => {
     chainId: chainIdStr,
     functionName: 'createShortcut',
     args: [
-      data.pool, // Use the pool address fetched from the API
-      data.pType, // Use the pType from the API response
+      pool, // Use the pool address fetched from the API
+      pType, // Use the pType from the API response
       BigInt(_cId), // Use the chainId from the request context
     ],
-    to : '0x892C413A65193bC42A5FF23103E6231465b3861c',
+    to : contractChain as `0x${string}`,
   });
 });
  
