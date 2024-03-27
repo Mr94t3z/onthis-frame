@@ -3,8 +3,12 @@ import { handle } from 'frog/vercel';
 import fetch from 'node-fetch';
 import { abi } from './resources/abiOnchain.js';
 // Uncomment this packages to tested on local server
-// import { devtools } from 'frog/dev';
-// import { serveStatic } from 'frog/serve-static';
+import { devtools } from 'frog/dev';
+import { serveStatic } from 'frog/serve-static';
+import dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
 
 // Define the type for the CSV row
 interface SwapData {
@@ -24,31 +28,37 @@ let totalPages = 0;
 const unsupportedChain = ['Mainnet', 'Arbitrum', 'Polygon'];
 
 async function readCSV() {
-  const csvUrl = 'https://raw.githubusercontent.com/Mr94t3z/onthis-frame/master/api/resources/data.csv';
-  
+  const csvUrl = process.env.CSV_API_URL;
+
+  // Check if csvUrl is defined before attempting to fetch
+  if (!csvUrl) {
+    console.error('CSV_API_URL is not defined');
+    return;
+  }
+
   try {
     const response = await fetch(csvUrl);
-    
+
     // Check if the fetch was successful
     if (!response.ok) {
       throw new Error(`Failed to fetch CSV: ${response.status} ${response.statusText}`);
     }
-    
+
     const csvText = await response.text();
     const rows = csvText.split('\n');
-    
+
     rows.forEach((row, index) => {
       if (index === 0 || row.trim() === '') return; // Skip header row and empty rows
-      
+
       const columns = row.split(',');
       if (columns.length < 5) { // Assuming 5 columns expected
         console.error(`Skipping malformed row: ${row}`);
         return;
       }
-      
+
       const originChain = columns[3].trim();
       const destinationChain = columns[4].trim();
-      
+
       if (!unsupportedChain.includes(originChain)) {
         const swapData = {
           shortcutAddress: columns[0],
@@ -60,13 +70,14 @@ async function readCSV() {
         apiData.push(swapData);
       }
     });
-    
+
     totalPages = Math.ceil(apiData.length / itemsPerPage);
     console.log('CSV file successfully processed.');
   } catch (error) {
     console.error('Error loading or processing CSV:', error);
   }
 }
+
 
 
 // Call function to populate data
@@ -177,7 +188,7 @@ app.frame('/swap-shortcut', (c) => {
 
 
 app.frame('/transaction/:shortcutAddress/:token/:description/:originChain/:destinationChain', (c) => {
-  const { shortcutAddress, token, description, originChain, destinationChain } = c.req.param()
+  const { shortcutAddress, token, description, originChain, destinationChain } = c.req.param();
 
   return c.res({
     action: `/finish/${originChain}`,
@@ -294,7 +305,7 @@ app.transaction('/transfer/:shortcutAddress/:originChain', async (c, next) => {
 
 app.frame('/finish/:originChain', (c) => {
   const { transactionId } = c
-  const { originChain } = c.req.param()
+  const { originChain } = c.req.param();
 
   let originChainScan = '';
 
@@ -361,17 +372,176 @@ app.frame('/finish/:originChain', (c) => {
 // Frame createShortcut function
 app.frame('/create-shortcut', (c) => {
   return c.res({
-    action: '/finish-create-shortcut',
-    image: '/images/create-shortcut.jpeg',
+    action: '/destination-chain-shortcut',
+    image: '/images/origin-chain.jpeg',
     intents: [
-      <TextInput placeholder="Enter Token Address..." />,
-      <Button.Reset>Cancel 🙅🏻‍♂️</Button.Reset>,
-      <Button.Transaction target="/submit-create-shortcut">Create Shortcut</Button.Transaction>,
+      <Button value="Optimism">Optimism</Button>,
+      <Button value="Optimism">Base</Button>,
     ]
   })
 })
 
-app.transaction('/submit-create-shortcut', async (c, next) => {
+app.frame('/destination-chain-shortcut', (c) => {
+  const {buttonValue} = c;
+  const originChain = buttonValue;
+
+  return c.res({
+    action: `/input-token-shortcut/${originChain}`,
+    image: '/images/destination-chain.jpeg',
+    intents: [
+      <Button value="1">Mainnet</Button>,
+      <Button value="10">Optimism</Button>,
+      <Button value="137">Polygon</Button>,
+      <Button value="8453">Base</Button>,
+      // <Button value="42161">Arbitrum</Button>,
+    ]
+  })
+})
+
+
+app.frame('/input-token-shortcut/:originChain', (c) => {
+  const {buttonValue} = c;
+
+  const {originChain} = c.req.param();
+
+  const destinationChain = buttonValue;
+  
+  return c.res({
+    action: `/validate-shortcut/${originChain}/${destinationChain}`,
+    image: '/images/input-token.jpeg',
+    intents: [
+      <TextInput placeholder="Enter Token Address..." />,
+      <Button action='/create-shortcut'>Cancel 🙅🏻‍♂️</Button>,
+      <Button>Confirm</Button>,
+    ]
+  })
+})
+
+app.frame('/validate-shortcut/:originChain/:destinationChain', async (c) => {
+  const { inputText } = c;
+  const { originChain, destinationChain } = c.req.param();
+
+  const address = inputText as `0x${string}`;
+
+  let validate_address, response;
+
+  try {
+    const request = await fetch(`https://create.onthis.xyz/api/highest-pool-tvl/${address}/${destinationChain}`);
+    const data = await request.json();
+
+    if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address) || data === null || data.pool === null || data.pool === '') {
+      validate_address = `❌ The token address seems not valid or cannot be found in the highest pool!`;
+    } else {
+      validate_address = 'is valid';
+      response = data;
+      console.log(response);
+    }    
+  } catch (error) {
+    console.error('An error occurred while fetching or processing data:', error);
+    validate_address = `❌ An error occurred while fetching or processing data: ${(error as Error).message}`;
+  }
+  
+
+  console.log(destinationChain);
+
+  function getOriginChainInfo(originChain: string) {
+    switch (originChain) {
+      case 'Mainnet':
+        return { logo: '/images/chain/eth.png', name: 'Mainnet' };
+      case 'Optimism':
+        return { logo: '/images/chain/op.png', name: 'Optimism' };
+      case 'Polygon':
+        return { logo: '/images/chain/polygon.png', name: 'Polygon' };
+      case 'Base':
+        return { logo: '/images/chain/base.png', name: 'Base' };
+      case 'Arbitrum':
+        return { logo: '/images/chain/arb.png', name: 'Arbitrum' };
+      default:
+        return { logo: '/images/icon.png', name: '' };
+    }
+  }  
+
+  const getDestinationChainInfo = (destinationChain: string) => {
+    switch (destinationChain) {
+      case '1':
+        return { name: 'Mainnet', logo: '/images/chain/eth.png' };
+      case '10':
+        return { name: 'Optimism', logo: '/images/chain/op.png' };
+      case '137':
+        return { name: 'Polygon', logo: '/images/chain/polygon.png' };
+      case '8453':
+        return { name: 'Base', logo: '/images/chain/base.png' };
+      case '42161':
+        return { name: 'Arbitrum', logo: '/images/chain/arb.png' };
+      default:
+        return { name: '', logo: '/images/icon.png' };
+    }
+  };
+
+  const originChainInfo = getOriginChainInfo(originChain);
+  const destinationChainInfo = getDestinationChainInfo(destinationChain);
+
+  return c.res({
+    action: '/finish-create-shortcut',
+    image: (
+      <div
+        style={{
+          alignItems: 'center',
+          background: 'white',
+          backgroundSize: '100% 100%',
+          display: 'flex',
+          flexDirection: 'column',
+          flexWrap: 'nowrap',
+          height: '100%',
+          justifyContent: 'center',
+          textAlign: 'center',
+          width: '100%',
+          color: 'white',
+          fontSize: 60,
+          fontStyle: 'normal',
+          letterSpacing: '-0.025em',
+          lineHeight: 1.4,
+          marginTop: 0,
+          padding: '0 120px',
+          whiteSpace: 'pre-wrap',
+        }}
+      >
+        <div style={{ alignItems: 'center', color: 'black', display: 'flex', fontSize: 30, flexDirection: 'column', marginBottom: 60 }}>
+        {validate_address === 'is valid' ? (
+          <>
+            <p>
+              <img src={originChainInfo.logo} width='40px' height='40px' alt="Chain logo" />
+              &nbsp;
+              {originChainInfo.name}
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <span>🔀</span>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <img src={destinationChainInfo.logo} width='40px' height='40px' alt="Chain logo" />
+              &nbsp;
+              {destinationChainInfo.name}
+            </p>
+          </>
+        ) : (
+          <p>{validate_address}</p>
+        )}
+      </div>
+    </div>
+    ),
+    intents: [
+      validate_address === 'is valid' && (
+        <Button action='/create-shortcut'>Cancel 🙅🏻‍♂️</Button>
+      ),
+      validate_address === 'is valid' ? (
+        <Button.Transaction target={`/submit-create-shortcut/:${originChain}/:${destinationChain}/:${response}`}>Create Shortcut</Button.Transaction>
+      ) : (
+        <Button action='/create-shortcut'>Try Again</Button>
+      ),
+    ]
+  });
+});
+
+
+app.transaction('/submit-create-shortcut/:originChain/:destinationChain/:response', async (c, next) => {
   await next();
   const txParams = await c.res.json();
   txParams.attribution = false;
@@ -383,30 +553,33 @@ app.transaction('/submit-create-shortcut', async (c, next) => {
   });
 },
 async (c) => {
-  const { inputText } = c;
+  const {originChain, destinationChain, response} = c.req.param();
 
-  // Make an HTTP request to the API endpoint
-  const address = inputText as `0x${string}`;
+  const _cId = destinationChain;
+  const data = response;
+  console.log(data)
 
-  if(!address) {
-    throw new Error("Not a valid address!");
-  }
-
-  const _cId = '8453';
-
-  const response = await fetch(`https://create.onthis.xyz/api/highest-pool-tvl/${address}/${_cId}`);
-  const data = await response.json();
-
-  console.log(data);
-
-  if (!data || !data.pool) {
-      throw new Error("Failed to fetch pool address from API");
-  }
+  // Get the chain ID
+  const getChainId = (chain: string) => {
+    switch (chain) {
+      case 'Optimism':
+        return 'eip155:10';
+      case 'Base':
+        return 'eip155:8453';
+      case 'Base Sepolia':
+        return 'eip155:84532';
+      case 'Zora':
+        return 'eip155:7777777';
+      default:
+        throw new Error(`Unsupported chain: ${chain}`);
+    }
+  };
+  const chainIdStr = getChainId(originChain);
 
   // Contract transaction call
   return c.contract({
     abi: abi,
-    chainId: 'eip155:8453',
+    chainId: chainIdStr,
     functionName: 'createShortcut',
     args: [
       data.pool, // Use the pool address fetched from the API
@@ -458,7 +631,7 @@ app.frame('/finish-create-shortcut', (c) => {
 })
 
 // Uncomment this line code to tested on local server
-// devtools(app, { serveStatic });
+devtools(app, { serveStatic });
 
 // Export handlers
 export const GET = handle(app);
