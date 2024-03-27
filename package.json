@@ -11,7 +11,7 @@
     "@zerodev/ecdsa-validator": "^5.1.0",
     "@zerodev/sdk": "^5.1.13",
     "dotenv": "^16.4.5",
-    "frog": "latest",
+    "frog": "^0.7.13",
     "hono": "latest"
   },
   "devDependencies": {

@@ -436,14 +436,15 @@ app.frame('/validate-shortcut/:originChain/:destinationChain', async (c) => {
     } else {
       validate_address = 'is valid';
       response = data;
-      console.log(response);
     }    
   } catch (error) {
     console.error('An error occurred while fetching or processing data:', error);
     validate_address = `❌ The token address seems not valid or cannot be found in the highest pool!`;
   }
-  
 
+  const { pool, pType } = response; 
+
+  
   function getOriginChainInfo(originChain: string) {
     switch (originChain) {
       case '1':
@@ -532,7 +533,8 @@ app.frame('/validate-shortcut/:originChain/:destinationChain', async (c) => {
         <Button action='/create-shortcut'>Cancel 🙅🏻‍♂️</Button>
       ),
       validate_address === 'is valid' ? (
-        <Button.Transaction target={`/submit-create-shortcut/${originChain}/${destinationChain}/${response}`}>Create Shortcut</Button.Transaction>
+        <Button.Transaction target={`/submit-create-shortcut/${originChain}/${destinationChain}/${pool}/${pType}`}>Create Shortcut</Button.Transaction>
+        // <Button action={`/submit-create-shortcut/${originChain}/${destinationChain}`}>Create Shortcut</Button>
       ) : (
         <Button action='/create-shortcut'>Try Again</Button>
       ),
@@ -541,7 +543,7 @@ app.frame('/validate-shortcut/:originChain/:destinationChain', async (c) => {
 });
 
 
-app.transaction('/submit-create-shortcut/:originChain/:destinationChain/:response', async (c, next) => {
+app.transaction('/submit-create-shortcut/:originChain/:destinationChain/:pool/:pType', async (c, next) => {
   await next();
   const txParams = await c.res.json();
   txParams.attribution = false;
@@ -553,11 +555,14 @@ app.transaction('/submit-create-shortcut/:originChain/:destinationChain/:respons
   });
 },
 async (c) => {
-  const {originChain, destinationChain, response} = c.req.param();
+  const {originChain, destinationChain, pool, pType} = c.req.param();
 
   const _cId = destinationChain;
-  const { pool, pType } = JSON.parse(response);
-  console.log(response);
+  // Convert pType to number if necessary
+  const pTypeNumber = parseInt(pType);
+  if (isNaN(pTypeNumber)) {
+    throw new Error(`Invalid pType: ${pType}`);
+  }
 
   // Get the chain ID
   const getChainId = (chain: string) => {
@@ -603,8 +608,8 @@ async (c) => {
     chainId: chainIdStr,
     functionName: 'createShortcut',
     args: [
-      pool, // Use the pool address fetched from the API
-      pType, // Use the pType from the API response
+      pool as `0x${string}`, // Use the pool address fetched from the API
+      pTypeNumber, // Use the pType from the API response
       BigInt(_cId), // Use the chainId from the request context
     ],
     to : contractChain as `0x${string}`,
