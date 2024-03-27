@@ -543,17 +543,7 @@ app.frame('/validate-shortcut/:originChain/:destinationChain', async (c) => {
 });
 
 
-app.transaction('/submit-create-shortcut/:originChain/:destinationChain/:pool/:pType', async (c, next) => {
-  await next();
-  const txParams = await c.res.json();
-  txParams.attribution = false;
-  console.log(txParams);
-  c.res = new Response(JSON.stringify(txParams), {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-}, (c) => {
+app.transaction('/submit-create-shortcut/:originChain/:destinationChain/:pool/:pType', (c) => {
   const {originChain, destinationChain, pool, pType} = c.req.param();
 
   const _cId = destinationChain;
