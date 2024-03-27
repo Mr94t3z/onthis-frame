@@ -2,6 +2,9 @@ import { Button, Frog, TextInput, parseEther } from 'frog';
 import { handle } from 'frog/vercel';
 import fetch from 'node-fetch';
 import { abi } from './resources/abiOnchain.js';
+// Uncomment this packages to tested on local server
+// import { devtools } from 'frog/dev';
+// import { serveStatic } from 'frog/serve-static';
 
 // Define the type for the CSV row
 interface SwapData {
@@ -21,32 +24,48 @@ let totalPages = 0;
 const unsupportedChain = ['Mainnet', 'Arbitrum', 'Polygon'];
 
 async function readCSV() {
-  // const csvUrl = 'https://raw.githubusercontent.com/{GitHub Username}/onthis-frame/master/api/resources/data.csv';
-  const csvUrl = 'https://raw.githubusercontent.com/Mr94t3z/request-farcaster-api/master/resources/data.csv';
-  const response = await fetch(csvUrl);
-  const csvText = await response.text();
-
-  const rows = csvText.split('\n');
-  rows.forEach((row, index) => {
-    if (index === 0) return; // Skip header row
-    const columns = row.split(',');
-    const originChain = columns[3].trim(); // Trim the originChain value
-    const destinationChain = columns[4].trim(); // Trim the destinationChain value
-    // Check if neither the origin chain nor the destination chain is in the unsupported chain list, if so, add to apiData
-    if (!unsupportedChain.includes(originChain) && !unsupportedChain.includes(destinationChain)) {
-      const swapData: SwapData = {
-        shortcutAddress: columns[0],
-        description: columns[1],
-        token: columns[2],
-        originChain: originChain,
-        destinationChain: destinationChain,
-      };
-      apiData.push(swapData);
+  const csvUrl = 'https://raw.githubusercontent.com/Mr94t3z/onthis-frame/master/api/resources/data.csv';
+  
+  try {
+    const response = await fetch(csvUrl);
+    
+    // Check if the fetch was successful
+    if (!response.ok) {
+      throw new Error(`Failed to fetch CSV: ${response.status} ${response.statusText}`);
     }
-  });
-
-  totalPages = Math.ceil(apiData.length / itemsPerPage);
-  console.log('CSV file successfully processed.');
+    
+    const csvText = await response.text();
+    const rows = csvText.split('\n');
+    
+    rows.forEach((row, index) => {
+      if (index === 0 || row.trim() === '') return; // Skip header row and empty rows
+      
+      const columns = row.split(',');
+      if (columns.length < 5) { // Assuming 5 columns expected
+        console.error(`Skipping malformed row: ${row}`);
+        return;
+      }
+      
+      const originChain = columns[3].trim();
+      const destinationChain = columns[4].trim();
+      
+      if (!unsupportedChain.includes(originChain)) {
+        const swapData = {
+          shortcutAddress: columns[0],
+          description: columns[1],
+          token: columns[2],
+          originChain: originChain,
+          destinationChain: destinationChain,
+        };
+        apiData.push(swapData);
+      }
+    });
+    
+    totalPages = Math.ceil(apiData.length / itemsPerPage);
+    console.log('CSV file successfully processed.');
+  } catch (error) {
+    console.error('Error loading or processing CSV:', error);
+  }
 }
 
 
@@ -63,7 +82,7 @@ export const app = new Frog({
 app.frame('/', (c) => {
   currentPage = 1;
   return c.res({
-    image: '/images/swap-shortcut.jpeg',
+    image: '/images/dashboard.jpeg',
     intents: [
       <Button action="/create-shortcut">👉🏻 Create Shortcut</Button>,
       <Button action="/swap-shortcut">Swap Shortcut 👈🏻</Button>,
@@ -438,41 +457,8 @@ app.frame('/finish-create-shortcut', (c) => {
   })
 })
 
-// app.frame('/failed-create-shortcut', (c) => {
-//   return c.res({
-//     image: (
-//         <div
-//         style={{
-//           alignItems: 'center',
-//           background: 'white',
-//           backgroundSize: '100% 100%',
-//           display: 'flex',
-//           flexDirection: 'column',
-//           flexWrap: 'nowrap',
-//           height: '100%',
-//           justifyContent: 'center',
-//           textAlign: 'center',
-//           width: '100%',
-//           color: 'white',
-//           fontSize: 60,
-//           fontStyle: 'normal',
-//           letterSpacing: '-0.025em',
-//           lineHeight: 1.4,
-//           marginTop: 0,
-//           padding: '0 120px',
-//           whiteSpace: 'pre-wrap',
-//         }}
-//       >
-//           <div style={{ alignItems: 'center', color: 'black', display: 'flex', fontSize: 30, flexDirection: 'column', marginBottom: 60 }}>
-//           <p style={{ justifyContent: 'center', textAlign: 'center', fontSize: 40}}>🧾 Transaction failure.</p>
-//           </div>
-//       </div>
-//     ),
-//     intents: [
-//       <Button action="/create-shortcut">← Try Again</Button>,
-//     ]
-//   })
-// })
+// Uncomment this line code to tested on local server
+// devtools(app, { serveStatic });
 
 // Export handlers
 export const GET = handle(app);
