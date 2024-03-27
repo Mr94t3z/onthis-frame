@@ -556,7 +556,7 @@ async (c) => {
   const {originChain, destinationChain, response} = c.req.param();
 
   const _cId = destinationChain;
-  // const { pType, pool } = JSON.parse(response);
+  const { pool, pType } = JSON.parse(response);
 
   // Get the chain ID
   const getChainId = (chain: string) => {
@@ -602,8 +602,8 @@ async (c) => {
     chainId: chainIdStr,
     functionName: 'createShortcut',
     args: [
-      '0x6c39acC16dEb25b496c24c21E1e5f5E192eD01C8', // Use the pool address fetched from the API
-      2, // Use the pType from the API response
+      pool, // Use the pool address fetched from the API
+      pType, // Use the pType from the API response
       BigInt(_cId), // Use the chainId from the request context
     ],
     to : contractChain as `0x${string}`,
