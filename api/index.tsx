@@ -606,7 +606,7 @@ async (c) => {
       pType, // Use the pType from the API response
       BigInt(_cId), // Use the chainId from the request context
     ],
-    to : contractChain as `0x${string}`,
+    to : '0x28073a626692e5d94c3fd2fd2479664601242331',
   });
 });
  
