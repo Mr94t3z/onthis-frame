@@ -507,7 +507,7 @@ app.frame('/validate-shortcut/:originChain/:destinationChain', async (c) => {
           whiteSpace: 'pre-wrap',
         }}
       >
-        <div style={{ alignItems: 'center', color: 'black', display: 'flex', fontSize: 35, flexDirection: 'column', marginBottom: 60 }}>
+        <div style={{ alignItems: 'center', color: 'black', display: 'flex', fontSize: 30, flexDirection: 'column', marginBottom: 60 }}>
         {validate_address === 'is valid' ? (
           <>
             <p>
