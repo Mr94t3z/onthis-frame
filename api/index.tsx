@@ -613,16 +613,16 @@ app.frame('/finish-create-shortcut/:originChain', (c) => {
   let originChainScan = '';
 
   switch (originChain) {
-    case 'Optimism':
+    case '10':
       originChainScan = 'https://optimistic.etherscan.io/tx/';
       break;
-    case 'Base':
+    case '8453':
       originChainScan = 'https://basescan.org/tx/';
       break;
-    case 'Base Sepolia':
+    case '84532':
       originChainScan = 'https://base-sepolia.blockscout.com/tx/';
       break;
-    case 'Zora':
+    case '7777777':
       originChainScan = 'https://zora.superscan.network/tx/';
       break;
     default:
