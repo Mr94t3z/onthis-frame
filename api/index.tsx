@@ -389,11 +389,11 @@ app.frame('/destination-chain-shortcut', (c) => {
     action: `/input-token-shortcut/${originChain}`,
     image: '/images/destination-chain.jpeg',
     intents: [
-      <Button value="1">Mainnet</Button>,
+      // <Button value="1">Mainnet</Button>,
       <Button value="10">Optimism</Button>,
       <Button value="137">Polygon</Button>,
       <Button value="8453">Base</Button>,
-      // <Button value="42161">Arbitrum</Button>,
+      <Button value="42161">Arbitrum</Button>,
     ]
   })
 })
