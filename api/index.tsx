@@ -553,8 +553,7 @@ app.transaction('/submit-create-shortcut/:originChain/:destinationChain/:pool/:p
       "Content-Type": "application/json",
     },
   });
-},
-async (c) => {
+}, (c) => {
   const {originChain, destinationChain, pool, pType} = c.req.param();
 
   const _cId = destinationChain;
