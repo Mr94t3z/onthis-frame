@@ -605,42 +605,42 @@ app.transaction('/submit-create-shortcut/:originChain/:destinationChain/:pool/:p
   });
 });
  
-app.frame('/finish-create-shortcut', (c) => {
-  const { transactionId } = c
+app.frame('/finish-create-shortcut/:originChain', (c) => {
+  const { transactionId } = c;
+
+  const { originChain } = c.req.param();
+
+  let originChainScan = '';
+
+  switch (originChain) {
+    case 'Optimism':
+      originChainScan = 'https://optimistic.etherscan.io/tx/';
+      break;
+    case 'Base':
+      originChainScan = 'https://basescan.org/tx/';
+      break;
+    case 'Base Sepolia':
+      originChainScan = 'https://base-sepolia.blockscout.com/tx/';
+      break;
+    case 'Zora':
+      originChainScan = 'https://zora.superscan.network/tx/';
+      break;
+    default:
+      break;
+  }
+  
+  const buttonLink = transactionId && originChainScan ? (
+    <Button.Link href={`${originChainScan}${transactionId}`}>
+      View on {originChain}
+    </Button.Link>
+  ) : null;
+
     
   return c.res({
-    image: (
-        <div
-        style={{
-          alignItems: 'center',
-          background: 'white',
-          backgroundSize: '100% 100%',
-          display: 'flex',
-          flexDirection: 'column',
-          flexWrap: 'nowrap',
-          height: '100%',
-          justifyContent: 'center',
-          textAlign: 'center',
-          width: '100%',
-          color: 'white',
-          fontSize: 60,
-          fontStyle: 'normal',
-          letterSpacing: '-0.025em',
-          lineHeight: 1.4,
-          marginTop: 0,
-          padding: '0 120px',
-          whiteSpace: 'pre-wrap',
-        }}
-      >
-          <div style={{ alignItems: 'center', color: 'black', display: 'flex', fontSize: 30, flexDirection: 'column', marginBottom: 60 }}>
-          <p style={{ justifyContent: 'center', textAlign: 'center', fontSize: 40}}>🧾 Shortcut Created:</p>
-            <p>{transactionId}</p>
-          </div>
-      </div>
-    ),
+    image: '/images/shortcut-created.jpeg',
     intents: [
         <Button.Reset>🏠 Home</Button.Reset>,
-        <Button.Link href={`https://basescan.org/tx/${transactionId}`}>View Tx</Button.Link>,
+        buttonLink
     ]
   })
 })
