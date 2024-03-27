@@ -483,7 +483,7 @@ app.frame('/validate-shortcut/:originChain/:destinationChain', async (c) => {
   const destinationChainInfo = getDestinationChainInfo(destinationChain);
 
   return c.res({
-    action: '/finish-create-shortcut',
+    action: `/finish-create-shortcut/${originChain}`,
     image: (
       <div
         style={{
