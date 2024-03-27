@@ -557,6 +557,7 @@ async (c) => {
 
   const _cId = destinationChain;
   const { pool, pType } = JSON.parse(response);
+  console.log(response);
 
   // Get the chain ID
   const getChainId = (chain: string) => {
