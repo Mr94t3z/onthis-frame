@@ -299,12 +299,12 @@ app.frame('/transaction/:shortcutAddress/:token/:description/:originChain/:desti
     intents: [
       <TextInput placeholder="Enter ETH Amount..." />,
       <Button.Reset>Cancel 🙅🏻‍♂️</Button.Reset>,
-      <Button.Transaction target={`/transfer/${shortcutAddress}/${originChain}`}>Transfer ETH</Button.Transaction>,
+      <Button.Transaction target={`/send-ether/${shortcutAddress}/${originChain}`}>Send ETH</Button.Transaction>,
     ],
   });
 });
 
-app.transaction('/transfer/:shortcutAddress/:originChain', async (c, next) => {
+app.transaction('/send-ether/:shortcutAddress/:originChain', async (c, next) => {
   await next();
   const txParams = await c.res.json();
   txParams.attribution = false;
