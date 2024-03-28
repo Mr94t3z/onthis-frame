@@ -4,8 +4,8 @@ import { abi } from './resources/abiOnchain.js';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 // Uncomment this packages to tested on local server
-import { devtools } from 'frog/dev';
-import { serveStatic } from 'frog/serve-static';
+// import { devtools } from 'frog/dev';
+// import { serveStatic } from 'frog/serve-static';
 
 
 // Load environment variables from .env file
@@ -691,7 +691,7 @@ app.frame('/finish-create-shortcut/:originChain', (c) => {
 })
 
 // Uncomment this line code to tested on local server
-devtools(app, { serveStatic });
+// devtools(app, { serveStatic });
 
 // Export handlers
 export const GET = handle(app);
