@@ -4,8 +4,8 @@ import { abi } from './resources/abiOnchain.js';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 // Uncomment this packages to tested on local server
-// import { devtools } from 'frog/dev';
-// import { serveStatic } from 'frog/serve-static';
+import { devtools } from 'frog/dev';
+import { serveStatic } from 'frog/serve-static';
 
 
 // Load environment variables from .env file
@@ -78,8 +78,6 @@ async function readCSV() {
     console.error('Error loading or processing CSV:', error);
   }
 }
-
-
 
 // Call function to populate data
 readCSV();
@@ -226,13 +224,13 @@ app.frame('/swap-shortcut', (c) => {
       </div>
     ),
     intents: [
-      currentPage > 1 && <Button value="back">⬅️ Previous</Button>,
+      currentPage > 1 && <Button action='/back'>⬅️ Previous</Button>,
       ...displayData.map(item => (
         <Button action={`/transaction/${item.shortcutAddress}/${item.token}/${item.description}/${item.originChain}/${item.destinationChain}`} value={`💰 ${item.token}`}>
           {`💰 ${item.token}`}
         </Button>
       )),
-      currentPage < totalPages && <Button value="next">Next ➡️</Button>,
+      currentPage < totalPages && <Button action='/next'>Next ➡️</Button>,
     ],
   });
 });
@@ -425,43 +423,37 @@ app.frame('/create-shortcut', (c) => {
     action: '/destination-chain-shortcut',
     image: '/images/origin-chain.jpeg',
     intents: [
-      <Button value="10">Optimism</Button>,
-      <Button value="8453">Base</Button>,
+      <Button action={`/destination-chain-shortcut/10`}>Optimism</Button>,
+      <Button action={`/destination-chain-shortcut/8453`}>Base</Button>,
     ]
   })
 })
 
-app.frame('/destination-chain-shortcut', (c) => {
-  const {buttonValue} = c;
-  const originChain = buttonValue;
+app.frame('/destination-chain-shortcut/:originChain', (c) => {
+  const {originChain} = c.req.param()
 
   return c.res({
-    action: `/input-token-shortcut/${originChain}`,
     image: '/images/destination-chain.jpeg',
     intents: [
-      // <Button value="1">Mainnet</Button>,
-      <Button value="10">Optimism</Button>,
-      <Button value="137">Polygon</Button>,
-      <Button value="8453">Base</Button>,
-      <Button value="42161">Arbitrum</Button>,
+      // <Button action={`/input-token-shortcut/1`}>Mainnet</Button>,
+      <Button action={`/input-token-shortcut/${originChain}/10`}>Optimism</Button>,
+      <Button action={`/input-token-shortcut/${originChain}/8453`}>Base</Button>,
+      <Button action={`/input-token-shortcut/${originChain}/8453`}>Base</Button>,
+      <Button action={`/input-token-shortcut/${originChain}/42161`}>Arbitrum</Button>,
     ]
   })
 })
 
 
-app.frame('/input-token-shortcut/:originChain', (c) => {
-  const {buttonValue} = c;
-
-  const {originChain} = c.req.param();
-
-  const destinationChain = buttonValue;
+app.frame('/input-token-shortcut/:originChain/:destinationChain', (c) => {
+  const {originChain, destinationChain} = c.req.param();
   
   return c.res({
     action: `/validate-shortcut/${originChain}/${destinationChain}`,
     image: '/images/input-token.jpeg',
     intents: [
       <TextInput placeholder="Enter Token Address..." />,
-      <Button action='/create-shortcut'>← Cancel</Button>,
+      <Button.Reset>Cancel 🙅🏻‍♂️</Button.Reset>,
       <Button>Confirm</Button>,
     ]
   })
@@ -695,7 +687,7 @@ app.frame('/finish-create-shortcut/:originChain', (c) => {
 })
 
 // Uncomment this line code to tested on local server
-// devtools(app, { serveStatic });
+devtools(app, { serveStatic });
 
 // Export handlers
 export const GET = handle(app);
