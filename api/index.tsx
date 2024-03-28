@@ -145,18 +145,18 @@ app.frame('/', (c) => {
     image: '/images/dashboard.jpeg',
     intents: [
       <Button action="/create-shortcut">👉🏻 Create Shortcut</Button>,
-      <Button action="/swap-shortcut">Swap Shortcut 👈🏻</Button>,
+      <Button action="/swap-shortcut/back">Swap Shortcut 👈🏻</Button>,
     ],
   });
 });
 
 // Swap Shortcut frame state
-app.frame('/swap-shortcut', (c) => {
-  const { buttonValue } = c;
+app.frame('/swap-shortcut/:state', (c) => {
+  const { state } = c.req.param();
 
-  if (buttonValue === 'next' && currentPage < totalPages) {
+  if (state === 'next' && currentPage < totalPages) {
     currentPage++;
-  } else if (buttonValue === 'back' && currentPage > 1) {
+  } else if (state === 'back' && currentPage > 1) {
     currentPage--;
   }
 
@@ -224,13 +224,13 @@ app.frame('/swap-shortcut', (c) => {
       </div>
     ),
     intents: [
-      currentPage > 1 && <Button value='back'>⬅️ Previous</Button>,
+      currentPage > 1 && <Button action='/swap-shortcut/back'>⬅️ Previous</Button>,
       ...displayData.map(item => (
         <Button action={`/transaction/${item.shortcutAddress}/${item.token}/${item.description}/${item.originChain}/${item.destinationChain}`} value={`💰 ${item.token}`}>
           {`💰 ${item.token}`}
         </Button>
       )),
-      currentPage < totalPages && <Button value='next'>Next ➡️</Button>,
+      currentPage < totalPages && <Button action='/swap-shortcut/next'>Next ➡️</Button>,
     ],
   });
 });
@@ -349,7 +349,6 @@ app.transaction('/transfer/:shortcutAddress/:originChain', async (c, next) => {
     value: parseEther(value),
   })
 });
-
 
 app.frame('/finish/:originChain', (c) => {
   const { transactionId } = c
