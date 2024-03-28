@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Head to http://localhost:5173/api/frame
+> Head to http://localhost:5173/api/frame
 
 
 ### Deploy to Vercel
@@ -20,18 +20,18 @@ npm run deploy
 
 ### Frame Overview
 
-The cast view on Warpcast.
+> The cast view on Warpcast.
 
-![Cast Overview](public/images/results/cast_overview.png)
+![Cast Overview](public/images/results/cast-overview.png)
 
-Create shortcut overview.
+> Create shortcut overview.
 
-![Create Shortcut Overview](public/images/results/create_overview.png)
+![Create Shortcut Overview](public/images/results/create-overview.png)
 
-Swap shortcut overview.
+> Swap shortcut overview.
 
-![Create Shortcut Overview](public/images/results/swap_overview.png)
+![Create Shortcut Overview](public/images/results/swap-overview.png)
 
-The frame can be view using `XMTP` - https://xmtp.chat/ tho.
+> The frame can be view using `XMTP` - https://xmtp.chat/ tho.
 
-![XMTP Overview](public/images/results/xmtp_overview.png)
+![XMTP Overview](public/images/results/xmtp-overview.png)
