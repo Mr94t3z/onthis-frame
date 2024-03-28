@@ -468,8 +468,9 @@ app.frame('/validate-shortcut/:originChain/:destinationChain', async (c) => {
   let validate_address, response;
 
   try {
-    // const request = await fetch(`${process.env.ONCHAIN_HIGHEST_POOL_API_URL}/${address}/${chainId}`);
-    const request = await fetch(`https://create.onthis.xyz/api/highest-pool-tvl/${address}/${chainId}`);
+    const baseUrl = process.env.ONCHAIN_HIGHEST_POOL_API_URL
+
+    const request = await fetch(`${baseUrl}/${address}/${chainId}`);
     const data = await request.json();
 
     if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address) || data === null || data.pool === null || data.pool === '') {
@@ -477,10 +478,11 @@ app.frame('/validate-shortcut/:originChain/:destinationChain', async (c) => {
     } else {
       validate_address = 'is valid';
       response = data;
+      console.log('The token address ' + validate_address + '.');
     }    
   } catch (error) {
-    console.error('An error occurred while fetching or processing data:', error);
     validate_address = `❌ The token address seems not valid or cannot be found in the highest pool!`;
+    console.log(validate_address);
   }
 
   const { pool, pType } = response || {};
