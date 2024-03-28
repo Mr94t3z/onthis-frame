@@ -113,6 +113,7 @@ app.use(async (c, next) => {
   console.log('Outgoing response:', c.res);
 });
 
+
 // Initial frame
 app.frame('/', (c) => {
   currentPage = 1;
@@ -466,7 +467,7 @@ app.frame('/validate-shortcut/:originChain/:destinationChain', async (c) => {
     validate_address = `❌ The token address seems not valid or cannot be found in the highest pool!`;
   }
 
-  const { pool, pType } = response; 
+  const { pool, pType } = response || {};
 
   
   function getOriginChainInfo(originChain: string) {
@@ -558,7 +559,6 @@ app.frame('/validate-shortcut/:originChain/:destinationChain', async (c) => {
       ),
       validate_address === 'is valid' ? (
         <Button.Transaction target={`/submit-create-shortcut/${originChain}/${destinationChain}/${pool}/${pType}`}>Create Shortcut</Button.Transaction>
-        // <Button action={`/submit-create-shortcut/${originChain}/${destinationChain}`}>Create Shortcut</Button>
       ) : (
         <Button action='/create-shortcut'>Try Again</Button>
       ),

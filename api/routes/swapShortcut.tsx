@@ -1,6 +1,14 @@
 import { Button, Frog, TextInput, parseEther } from 'frog';
 import { handle } from 'frog/vercel';
 import fetch from 'node-fetch';
+import dotenv from 'dotenv';
+// Uncomment this packages to tested on local server
+// import { devtools } from 'frog/dev';
+// import { serveStatic } from 'frog/serve-static';
+
+
+// Load environment variables from .env file
+dotenv.config();
 
 // Define the type for the CSV row
 interface SwapData {
@@ -20,55 +28,104 @@ let totalPages = 0;
 const unsupportedChain = ['Mainnet', 'Arbitrum', 'Polygon'];
 
 async function readCSV() {
-  // const csvUrl = 'https://raw.githubusercontent.com/{GitHub Username}/onthis-frame/master/api/resources/data.csv';
-  const csvUrl = 'https://raw.githubusercontent.com/Mr94t3z/onthis-frame/master/api/resources/data.csv';
-  const response = await fetch(csvUrl);
-  const csvText = await response.text();
+  const csvUrl = process.env.CSV_API_URL;
 
-  const rows = csvText.split('\n');
-  rows.forEach((row, index) => {
-    if (index === 0) return; // Skip header row
-    const columns = row.split(',');
-    const originChain = columns[3].trim(); // Trim the originChain value
-    const destinationChain = columns[4].trim(); // Trim the destinationChain value
-    // Check if neither the origin chain nor the destination chain is in the unsupported chain list, if so, add to apiData
-    if (!unsupportedChain.includes(originChain) && !unsupportedChain.includes(destinationChain)) {
-      const swapData: SwapData = {
-        shortcutAddress: columns[0],
-        description: columns[1],
-        token: columns[2],
-        originChain: originChain,
-        destinationChain: destinationChain,
-      };
-      apiData.push(swapData);
+  // Check if csvUrl is defined before attempting to fetch
+  if (!csvUrl) {
+    console.error('CSV_API_URL is not defined');
+    return;
+  }
+
+  try {
+    const response = await fetch(csvUrl);
+
+    // Check if the fetch was successful
+    if (!response.ok) {
+      throw new Error(`Failed to fetch CSV: ${response.status} ${response.statusText}`);
     }
-  });
 
-  totalPages = Math.ceil(apiData.length / itemsPerPage);
-  console.log('CSV file successfully processed.');
+    const csvText = await response.text();
+    const rows = csvText.split('\n');
+
+    rows.forEach((row, index) => {
+      if (index === 0 || row.trim() === '') return; // Skip header row and empty rows
+
+      const columns = row.split(',');
+      if (columns.length < 5) { // Assuming 5 columns expected
+        console.error(`Skipping malformed row: ${row}`);
+        return;
+      }
+
+      const originChain = columns[3].trim();
+      const destinationChain = columns[4].trim();
+
+      if (!unsupportedChain.includes(originChain)) {
+        const swapData = {
+          shortcutAddress: columns[0],
+          description: columns[1],
+          token: columns[2],
+          originChain: originChain,
+          destinationChain: destinationChain,
+        };
+        apiData.push(swapData);
+      }
+    });
+
+    totalPages = Math.ceil(apiData.length / itemsPerPage);
+    console.log('CSV file successfully processed.');
+  } catch (error) {
+    console.error('Error loading or processing CSV:', error);
+  }
 }
+
 
 
 // Call function to populate data
 readCSV();
 
 // Initialize Frog app
-export const app = new Frog();
+export const app = new Frog({
+  assetsPath: '/',
+  basePath: '/api/frame',
+});
+
+// Support Open Frames
+app.use(async (c, next) => {
+
+  console.log('Incoming request:', c.req);
+
+  await next();
+  const isFrame = c.res.headers.get('content-type')?.includes('html');
+
+  if (isFrame) {
+    let html = await c.res.text();
+    const metaTag = '<meta property="of:accepts:xmtp" content="2024-02-01" />';
+    html = html.replace(/(<head>)/i, `$1${metaTag}`);
+    c.res = new Response(html, {
+      headers: {
+        'content-type': 'text/html',
+      },
+    });
+  }
+
+
+  console.log('Outgoing response:', c.res);
+});
 
 // Initial frame
 app.frame('/', (c) => {
   currentPage = 1;
   return c.res({
-    action: '/dashboard',
     image: '/images/dashboard.jpeg',
     intents: [
-      <Button action="/dashboard">Let's Started ✅</Button>,
+      <Button action="/create-shortcut">👉🏻 Create Shortcut</Button>,
+      <Button action="/swap-shortcut">Swap Shortcut 👈🏻</Button>,
     ],
   });
 });
 
-// Dashboard frame state
-app.frame('/dashboard', (c) => {
+// Swap Shortcut frame state
+app.frame('/swap-shortcut', (c) => {
   const { buttonValue } = c;
 
   if (buttonValue === 'next' && currentPage < totalPages) {
@@ -82,7 +139,7 @@ app.frame('/dashboard', (c) => {
   const displayData = apiData.slice(startIndex, endIndex);
 
   return c.res({
-    action: '/dashboard',
+    action: '/swap-shortcut',
     image: (
       <div
         style={{
@@ -154,7 +211,7 @@ app.frame('/dashboard', (c) => {
 
 
 app.frame('/transaction/:shortcutAddress/:token/:description/:originChain/:destinationChain', (c) => {
-  const { shortcutAddress, token, description, originChain, destinationChain } = c.req.param()
+  const { shortcutAddress, token, description, originChain, destinationChain } = c.req.param();
 
   return c.res({
     action: `/finish/${originChain}`,
@@ -215,7 +272,8 @@ app.frame('/transaction/:shortcutAddress/:token/:description/:originChain/:desti
     ),
     intents: [
       <TextInput placeholder="Enter ETH Amount..." />,
-      <Button action={`/dashboard`}>Cancel ❌</Button>,
+      // <Button action={`/swap-shortcut`}>Cancel 🙅🏻‍♂️</Button>,
+      <Button.Reset>Cancel 🙅🏻‍♂️</Button.Reset>,
       <Button.Transaction target={`/transfer/${shortcutAddress}/${originChain}`}>Transfer ETH</Button.Transaction>,
     ],
   });
@@ -270,7 +328,7 @@ app.transaction('/transfer/:shortcutAddress/:originChain', async (c, next) => {
 
 app.frame('/finish/:originChain', (c) => {
   const { transactionId } = c
-  const { originChain } = c.req.param()
+  const { originChain } = c.req.param();
 
   let originChainScan = '';
 
@@ -333,6 +391,10 @@ app.frame('/finish/:originChain', (c) => {
     ],
   })
 })
+
+
+// Uncomment this line code to tested on local server
+// devtools(app, { serveStatic });
 
 // Export handlers
 export const GET = handle(app);
