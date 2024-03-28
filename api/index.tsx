@@ -651,19 +651,24 @@ app.frame('/finish-create-shortcut/:originChain', (c) => {
   const { originChain } = c.req.param();
 
   let originChainScan = '';
+  let originChainName = '';
 
   switch (originChain) {
     case '10':
       originChainScan = 'https://optimistic.etherscan.io/tx/';
+      originChainName = 'Optimism';
       break;
     case '8453':
       originChainScan = 'https://basescan.org/tx/';
+      originChainName = 'Basescan';
       break;
     case '84532':
       originChainScan = 'https://base-sepolia.blockscout.com/tx/';
+      originChainName = 'Base Sepolia';
       break;
     case '7777777':
       originChainScan = 'https://zora.superscan.network/tx/';
+      originChainName = 'Zora';
       break;
     default:
       break;
@@ -671,7 +676,7 @@ app.frame('/finish-create-shortcut/:originChain', (c) => {
   
   const buttonLink = transactionId && originChainScan ? (
     <Button.Link href={`${originChainScan}${transactionId}`}>
-      View on {originChain}
+      View on {originChainName}
     </Button.Link>
   ) : null;
 
