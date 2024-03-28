@@ -224,13 +224,13 @@ app.frame('/swap-shortcut', (c) => {
       </div>
     ),
     intents: [
-      currentPage > 1 && <Button action='/back'>⬅️ Previous</Button>,
+      currentPage > 1 && <Button value='back'>⬅️ Previous</Button>,
       ...displayData.map(item => (
         <Button action={`/transaction/${item.shortcutAddress}/${item.token}/${item.description}/${item.originChain}/${item.destinationChain}`} value={`💰 ${item.token}`}>
           {`💰 ${item.token}`}
         </Button>
       )),
-      currentPage < totalPages && <Button action='/next'>Next ➡️</Button>,
+      currentPage < totalPages && <Button value='next'>Next ➡️</Button>,
     ],
   });
 });
@@ -437,7 +437,7 @@ app.frame('/destination-chain-shortcut/:originChain', (c) => {
     intents: [
       // <Button action={`/input-token-shortcut/1`}>Mainnet</Button>,
       <Button action={`/input-token-shortcut/${originChain}/10`}>Optimism</Button>,
-      <Button action={`/input-token-shortcut/${originChain}/8453`}>Base</Button>,
+      <Button action={`/input-token-shortcut/${originChain}/137`}>Polygon</Button>,
       <Button action={`/input-token-shortcut/${originChain}/8453`}>Base</Button>,
       <Button action={`/input-token-shortcut/${originChain}/42161`}>Arbitrum</Button>,
     ]
