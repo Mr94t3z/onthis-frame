@@ -1,8 +1,8 @@
 ##  Onthis Frame
 
-Integrate function `Create Shortcut` and `Swap Shortcut` using **Onthis** https://create.onthis.xyz/ on Farcaster Frame.
+The Farcaster Frame for Creating and Swapping Shortcuts seamlessly integrates with https://create.onthis.xyz/.
 
-## Starting
+## Command
 
 ```
 npm install
