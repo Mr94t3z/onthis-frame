@@ -300,7 +300,6 @@ app.frame('/transaction/:shortcutAddress/:token/:description/:originChain/:desti
     ),
     intents: [
       <TextInput placeholder="Enter ETH Amount..." />,
-      // <Button action={`/swap-shortcut`}>Cancel 🙅🏻‍♂️</Button>,
       <Button.Reset>Cancel 🙅🏻‍♂️</Button.Reset>,
       <Button.Transaction target={`/transfer/${shortcutAddress}/${originChain}`}>Transfer ETH</Button.Transaction>,
     ],
@@ -462,7 +461,7 @@ app.frame('/input-token-shortcut/:originChain', (c) => {
     image: '/images/input-token.jpeg',
     intents: [
       <TextInput placeholder="Enter Token Address..." />,
-      <Button action='/create-shortcut'>Cancel 🙅🏻‍♂️</Button>,
+      <Button action='/create-shortcut'>← Cancel</Button>,
       <Button>Confirm</Button>,
     ]
   })
@@ -581,7 +580,7 @@ app.frame('/validate-shortcut/:originChain/:destinationChain', async (c) => {
     ),
     intents: [
       validate_address === 'is valid' && (
-        <Button action='/create-shortcut'>Cancel 🙅🏻‍♂️</Button>
+        <Button.Reset>Cancel 🙅🏻‍♂️</Button.Reset>
       ),
       validate_address === 'is valid' ? (
         <Button.Transaction target={`/submit-create-shortcut/${originChain}/${destinationChain}/${pool}/${pType}`}>Create Shortcut</Button.Transaction>
