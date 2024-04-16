@@ -144,8 +144,9 @@ app.frame('/', (c) => {
   return c.res({
     image: '/images/dashboard.jpeg',
     intents: [
-      <Button action="/create-shortcut">👉🏻 Create Shortcut</Button>,
-      <Button action="/swap-shortcut/back">Swap Shortcut 👈🏻</Button>,
+      <Button action="/create-shortcut">⏩️ Create Shortcut</Button>,
+      <Button action="/">🔄 Refresh</Button>,
+      <Button action="/swap-shortcut/back">Swap Shortcut ⏪</Button>,
     ],
   });
 });
