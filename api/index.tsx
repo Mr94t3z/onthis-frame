@@ -144,20 +144,20 @@ app.frame('/', (c) => {
   return c.res({
     image: '/images/dashboard.jpeg',
     intents: [
-      <Button action="/create-shortcut">⏩️ Create Shortcut</Button>,
+      <Button action="/create-shortcut">🔭 Create Shortcut</Button>,
       <Button action="/">🔄 Refresh</Button>,
-      <Button action="/swap-shortcut/back">Swap Shortcut ⏪</Button>,
+      <Button action="/swap-shortcut">⛓️ Swap Shortcut</Button>,
     ],
   });
 });
 
 // Swap Shortcut frame state
-app.frame('/swap-shortcut/:state', (c) => {
-  const { state } = c.req.param();
+app.frame('/swap-shortcut', (c) => {
+  const { buttonValue } = c
 
-  if (state === 'next' && currentPage < totalPages) {
+  if (buttonValue === 'next' && currentPage < totalPages) {
     currentPage++;
-  } else if (state === 'back' && currentPage > 1) {
+  } else if (buttonValue === 'back' && currentPage > 1) {
     currentPage--;
   }
 
@@ -225,13 +225,14 @@ app.frame('/swap-shortcut/:state', (c) => {
       </div>
     ),
     intents: [
-      currentPage > 1 && <Button action='/swap-shortcut/back'>⬅️ Previous</Button>,
       ...displayData.map(item => (
         <Button action={`/transaction/${item.shortcutAddress}/${item.token}/${item.description}/${item.originChain}/${item.destinationChain}`} value={`💰 ${item.token}`}>
           {`💰 ${item.token}`}
         </Button>
       )),
-      currentPage < totalPages && <Button action='/swap-shortcut/next'>Next ➡️</Button>,
+      <Button action='/'>Cancel 🙅🏻‍♂️</Button>,
+      currentPage > 1 && <Button value="back">⬅️ Previous</Button>,
+      currentPage < totalPages && <Button value='next'>Next ➡️</Button>,
     ],
   });
 });
